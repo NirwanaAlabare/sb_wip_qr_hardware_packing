@@ -12,6 +12,7 @@ use App\Models\SignalBit\DefectArea;
 use App\Models\SignalBit\Defect as DefectModel;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Reject;
+use App\Models\Nds\Numbering;
 use App\Models\SignalBit\EndLineOutput;
 use Carbon\Carbon;
 use Validator;
@@ -27,6 +28,7 @@ class Defect extends Component
     public $sizeInput;
     public $sizeInputText;
     public $numberingInput;
+    public $numberingCode;
     public $defect;
 
     public $defectTypes;
@@ -84,6 +86,7 @@ class Defect extends Component
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->numberingInput = null;
+        $this->numberingCode = null;
 
         $this->defectType = null;
         $this->defectArea = null;
@@ -112,6 +115,7 @@ class Defect extends Component
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->numberingInput = null;
+        $this->numberingCode = null;
 
         $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
@@ -230,6 +234,16 @@ class Defect extends Component
 
     public function preSubmitInput()
     {
+        if ($this->numberingCode) {
+            $numberingData = Numbering::where("kode", $this->numberingCode)->first();
+
+            if ($numberingData) {
+                $this->sizeInput = $numberingData->so_det_id;
+                $this->sizeInputText = $numberingData->size;
+                $this->numberingInput = $numberingData->no_cut_size;
+            }
+        }
+
         $validation = Validator::make([
             'sizeInput' => $this->sizeInput,
             'numberingInput' => $this->numberingInput
@@ -247,7 +261,7 @@ class Defect extends Component
 
             $validation->validate();
         } else {
-            $endlineOutputData = EndlineOutput::where("master_plan_id", $this->orderInfo->id)->where("kode_numbering", $this->numberingInput)->first();
+            $endlineOutputData = EndlineOutput::where("kode_numbering", $this->numberingInput)->first();
 
             if ($endlineOutputData && $this->orderWsDetailSizes->where('size', $this->sizeInputText)->count() > 0) {
                 $this->emit('clearSelectDefectAreaPoint');
@@ -271,42 +285,50 @@ class Defect extends Component
 
     public function submitInput(SessionManager $session)
     {
+        $validatedData = $this->validate();
 
-        $insertDefect = DefectModel::create([
-            'master_plan_id' => $this->orderInfo->id,
-            'kode_numbering' => $this->numberingInput,
-            'so_det_id' => $this->sizeInput,
-            // 'product_type_id' => $this->productType,
-            'defect_type_id' => $this->defectType,
-            'defect_area_id' => $this->defectArea,
-            'defect_area_x' => $this->defectAreaPositionX,
-            'defect_area_y' => $this->defectAreaPositionY,
-            'status' => 'NORMAL',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
+        if ($this->orderWsDetailSizes->where('size', $this->sizeInputText)->count() > 0) {
+            $insertDefect = DefectModel::create([
+                'master_plan_id' => $this->orderInfo->id,
+                'kode_numbering' => $this->numberingInput,
+                'so_det_id' => $this->sizeInput,
+                // 'product_type_id' => $this->productType,
+                'defect_type_id' => $this->defectType,
+                'defect_area_id' => $this->defectArea,
+                'defect_area_x' => $this->defectAreaPositionX,
+                'defect_area_y' => $this->defectAreaPositionY,
+                'status' => 'NORMAL',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ]);
 
-        if ($insertDefect) {
-            $type = DefectType::select('defect_type')->find($this->defectType);
-            $area = DefectArea::select('defect_area')->find($this->defectArea);
-            $getSize = DB::table('so_det')
-                ->select('id', 'size')
-                ->where('id', $this->sizeInput)
-                ->first();
+            if ($insertDefect) {
+                $type = DefectType::select('defect_type')->find($this->defectType);
+                $area = DefectArea::select('defect_area')->find($this->defectArea);
+                $getSize = DB::table('so_det')
+                    ->select('id', 'size')
+                    ->where('id', $this->sizeInput)
+                    ->first();
 
-            $this->emit('alert', 'success', "1 output DEFECT berukuran ".$getSize->size." dengan jenis defect : ".$type->defect_type." dan area defect : ".$area->defect_area." berhasil terekam.");
-            $this->emit('hideModal', 'defect', 'regular');
+                $this->emit('alert', 'success', "1 output DEFECT berukuran ".$getSize->size." dengan jenis defect : ".$type->defect_type." dan area defect : ".$area->defect_area." berhasil terekam.");
+                $this->emit('hideModal', 'defect', 'regular');
 
-            $this->sizeInput = '';
-            $this->sizeInputText = '';
+                $this->sizeInput = '';
+                $this->sizeInputText = '';
+                $this->numberingInput = '';
+                $this->numberingCode = '';
+            } else {
+                $this->emit('alert', 'error', "Terjadi kesalahan. Output tidak berhasil direkam.");
+            }
+
+            $this->emit('qrInputFocus', 'defect');
         } else {
-            $this->emit('alert', 'error', "Terjadi kesalahan. Output tidak berhasil direkam.");
+            $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
         }
-
-        $this->emit('qrInputFocus', 'defect');
     }
 
-    public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText) {
+    public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText, $scannedNumberingCode) {
+        $this->numberingCode = $scannedNumberingCode;
         $this->numberingInput = $scannedNumbering;
         $this->sizeInput = $scannedSize;
         $this->sizeInputText = $scannedSizeText;
@@ -314,27 +336,44 @@ class Defect extends Component
         $this->preSubmitInput();
     }
 
-    public function pushRapidDefect($numberingInput, $sizeInput, $sizeInputText) {
+    public function pushRapidDefect($numberingInput, $sizeInput, $sizeInputText, $numberingCode) {
         $exist = false;
         foreach ($this->rapidDefect as $item) {
-            if ($item['numberingInput'] == $numberingInput) {
+            if (($numberingInput && $item['numberingInput'] == $numberingInput) || ($numberingCode && $item['numberingCode'] == $numberingCode)) {
                 $exist = true;
             }
         }
 
         if (!$exist) {
+            $this->rapidDefectCount += 1;
+
+            if ($numberingCode) {
+                $numberingData = Numbering::where("kode", $numberingCode)->first();
+
+                if ($numberingData) {
+                    $sizeInput = $numberingData->so_det_id;
+                    $sizeInputText = $numberingData->size;
+                    $numberingInput = $numberingData->no_cut_size;
+                }
+            }
+
             array_push($this->rapidDefect, [
                 'numberingInput' => $numberingInput,
                 'sizeInput' => $sizeInput,
                 'sizeInputText' => $sizeInputText,
+                'numberingCode' => $numberingCode,
             ]);
-
-            $this->rapidDefectCount += 1;
         }
     }
 
     public function preSubmitRapidInput()
     {
+        $this->defectType = null;
+        $this->defectArea = null;
+        $this->productType = null;
+        $this->defectAreaPositionX = null;
+        $this->defectAreaPositionY = null;
+
         $this->emit('showModal', 'defect', 'rapid');
     }
 
@@ -346,7 +385,7 @@ class Defect extends Component
         if ($this->rapidDefect && count($this->rapidDefect) > 0) {
 
             for ($i = 0; $i < count($this->rapidDefect); $i++) {
-                $endlineOutputCount = EndLineOutput::where('master_plan_id', $this->orderInfo->id)->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count();
+                $endlineOutputCount = EndLineOutput::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count();
 
                 if (($endlineOutputCount > 0) && !(DefectModel::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Rft::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('size', $this->rapidDefect[$i]['sizeInputText'])->count() > 0)) {
                     array_push($rapidDefectFiltered, [

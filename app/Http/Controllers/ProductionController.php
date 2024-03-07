@@ -52,7 +52,8 @@ class ProductionController extends Controller
             ->leftJoin('mastersupplier', 'mastersupplier.id_supplier', '=', 'act_costing.id_buyer')
             ->leftJoin('master_size_new', 'master_size_new.size', '=', 'so_det.size')
             ->leftJoin('masterproduct', 'masterproduct.id', '=', 'act_costing.id_product')
-            ->where('so_det.cancel', 'N');
+            ->where('so_det.cancel', '!=', 'Y')
+            ->where('master_plan.cancel', '!=', 'Y');
             if (Auth::user()->Groupp == "SEWING") {
                 $orderWsDetailsSql->where('master_plan.sewing_line', Auth::user()->username);
             }

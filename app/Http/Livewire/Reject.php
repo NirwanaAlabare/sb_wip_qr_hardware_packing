@@ -8,6 +8,7 @@ use App\Models\SignalBit\Reject as RejectModel;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\EndLineOutput;
+use App\Models\Nds\Numbering;
 use Carbon\Carbon;
 use DB;
 
@@ -19,6 +20,7 @@ class Reject extends Component
     public $sizeInput;
     public $sizeInputText;
     public $numberingInput;
+    public $numberingCode;
     public $reject;
 
     public $rapidReject;
@@ -67,6 +69,7 @@ class Reject extends Component
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->numberingInput = null;
+        $this->numberingCode = null;
 
         $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
@@ -94,15 +97,26 @@ class Reject extends Component
     {
         $this->sizeInput = null;
         $this->numberingInput = null;
+        $this->numberingCode = null;
     }
 
     public function submitInput()
     {
         $this->emit('qrInputFocus', 'reject');
 
+        if ($this->numberingCode) {
+            $numberingData = Numbering::where("kode", $this->numberingCode)->first();
+
+            if ($numberingData) {
+                $this->sizeInput = $numberingData->so_det_id;
+                $this->sizeInputText = $numberingData->size;
+                $this->numberingInput = $numberingData->no_cut_size;
+            }
+        }
+
         $validatedData = $this->validate();
 
-        $endlineOutputData = EndlineOutput::where("master_plan_id", $this->orderInfo->id)->where("kode_numbering", $this->numberingInput)->first();
+        $endlineOutputData = EndlineOutput::where("kode_numbering", $this->numberingInput)->first();
 
         if ($endlineOutputData && $this->orderWsDetailSizes->where('size', $this->sizeInputText)->count() > 0) {
             $insertReject = RejectModel::create([
@@ -119,6 +133,8 @@ class Reject extends Component
 
                 $this->sizeInput = '';
                 $this->sizeInputText = '';
+                $this->numberingInput = '';
+                $this->numberingCode = '';
             } else {
                 $this->emit('alert', 'error', "Terjadi kesalahan. Output tidak berhasil direkam.");
             }
@@ -129,7 +145,8 @@ class Reject extends Component
         $this->emit('qrInputFocus', 'reject');
     }
 
-    public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText) {
+    public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText, $scannedNumberingCode) {
+        $this->numberingCode = $scannedNumberingCode;
         $this->numberingInput = $scannedNumbering;
         $this->sizeInput = $scannedSize;
         $this->sizeInputText = $scannedSizeText;
@@ -137,22 +154,34 @@ class Reject extends Component
         $this->submitInput();
     }
 
-    public function pushRapidReject($numberingInput, $sizeInput, $sizeInputText) {
+    public function pushRapidReject($numberingInput, $sizeInput, $sizeInputText, $numberingCode) {
         $exist = false;
+
         foreach ($this->rapidReject as $item) {
-            if ($item['numberingInput'] == $numberingInput) {
+            if (($numberingInput && $item['numberingInput'] == $numberingInput) || ($numberingCode && $item['numberingCode'] == $numberingCode)) {
                 $exist = true;
             }
         }
 
         if (!$exist) {
+            $this->rapidRejectCount += 1;
+
+            if ($numberingCode) {
+                $numberingData = Numbering::where("kode", $numberingCode)->first();
+
+                if ($numberingData) {
+                    $sizeInput = $numberingData->so_det_id;
+                    $sizeInputText = $numberingData->size;
+                    $numberingInput = $numberingData->no_cut_size;
+                }
+            }
+
             array_push($this->rapidReject, [
                 'numberingInput' => $numberingInput,
                 'sizeInput' => $sizeInput,
                 'sizeInputText' => $sizeInputText,
+                'numberingCode' => $numberingCode,
             ]);
-
-            $this->rapidRejectCount += 1;
         }
     }
 
@@ -164,7 +193,7 @@ class Reject extends Component
         if ($this->rapidReject && count($this->rapidReject) > 0) {
 
             for ($i = 0; $i < count($this->rapidReject); $i++) {
-                $endlineOutputCount = EndlineOutput::where("master_plan_id", $this->orderInfo->id)->where("kode_numbering", $this->rapidReject[$i]['numberingInput'])->count();
+                $endlineOutputCount = EndlineOutput::where("kode_numbering", $this->rapidReject[$i]['numberingInput'])->count();
 
                 if (($endlineOutputCount > 0) && !(RejectModel::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0 || Rft::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0 || Defect::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('size', $this->rapidReject[$i]['sizeInputText'])->count() > 0)) {
                     array_push($rapidRejectFiltered, [

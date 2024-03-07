@@ -189,8 +189,8 @@
                                     <td>{{ $defects->firstItem() + $loop->index }}</td>
                                     <td>{{ $defect->id }}</td>
                                     <td>{{ $defect->so_det_size }}</td>
-                                    <td>{{ $defect->defectType->defect_type}}</td>
-                                    <td>{{ $defect->defectArea->defect_area }}</td>
+                                    <td>{{ $defect->defect_type}}</td>
+                                    <td>{{ $defect->defect_area }}</td>
                                     <td>
                                         <button type="button" class="btn btn-dark" wire:click="showDefectAreaImage('{{$defect->masterPlan->gambar}}', {{$defect->defect_area_x}}, {{$defect->defect_area_y}})'">
                                             <i class="fa-regular fa-image"></i>
@@ -202,7 +202,7 @@
                                             <div class="loading-small"></div>
                                         </div>
                                         <div wire:loading.remove>
-                                            <button class="btn btn-sm btn-rework fw-bold w-100" wire:click="$emit('preSubmitRework', '{{ $defect->id }}', '{{ $defect->so_det_size }}', '{{ $defect->defectType->defect_type }}', '{{ $defect->defectArea->defect_area }}', '{{ $defect->masterPlan->gambar }}', '{{ $defect->defect_area_x }}', '{{ $defect->defect_area_y }}')">
+                                            <button class="btn btn-sm btn-rework fw-bold w-100" wire:click="$emit('preSubmitRework', '{{ $defect->id }}', '{{ $defect->so_det_size }}', '{{ $defect->defect_type }}', '{{ $defect->defect_area }}', '{{ $defect->masterPlan->gambar }}', '{{ $defect->defect_area_x }}', '{{ $defect->defect_area_y }}')">
                                                 REWORK
                                             </button>
                                         </div>
@@ -253,8 +253,8 @@
                                     <td>{{ $reworks->firstItem() + $loop->index }}</td>
                                     <td>{{ $rework->defect->id }}</td>
                                     <td>{{ $rework->so_det_size }}</td>
-                                    <td>{{ $rework->defect->defectType->defect_type}}</td>
-                                    <td>{{ $rework->defect->defectArea->defect_area }}</td>
+                                    <td>{{ $rework->defect->defect_type}}</td>
+                                    <td>{{ $rework->defect->defect_area }}</td>
                                     <td class="text-rework fw-bold">{{ strtoupper($rework->defect->defect_status) }}</td>
                                     <td>
                                         <button type="button" class="btn btn-dark" wire:click="showDefectAreaImage('{{$rework->defect->masterPlan->gambar}}', {{$rework->defect->defect_area_x}}, {{$rework->defect->defect_area_y}})'">
@@ -266,7 +266,7 @@
                                             <div class="loading-small"></div>
                                         </div>
                                         <div wire:loading.remove>
-                                            <button class="btn btn-sm btn-defect fw-bold w-100" wire:click="$emit('preCancelRework', '{{ $rework->id }}', '{{ $rework->defect->id }}', '{{ $rework->so_det_size }}', '{{ $rework->defect->defectType->defect_type }}', '{{ $rework->defect->defectArea->defect_area }}', '{{$rework->defect->masterPlan->gambar}}', {{$rework->defect->defect_area_x}}, {{$rework->defect->defect_area_y}})">CANCEL</button>
+                                            <button class="btn btn-sm btn-defect fw-bold w-100" wire:click="$emit('preCancelRework', '{{ $rework->id }}', '{{ $rework->defect->id }}', '{{ $rework->so_det_size }}', '{{ $rework->defect->defect_type }}', '{{ $rework->defect->defect_area }}', '{{$rework->defect->masterPlan->gambar}}', {{$rework->defect->defect_area_x}}, {{$rework->defect->defect_area_y}})">CANCEL</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -438,24 +438,22 @@
             let k = 2;
 
             if (this.value.includes('WIP')) {
-                i = 3;
-                j = 4;
-                k = 5;
+                @this.numberingCode = this.value;
+            } else {
+                // break decoded text
+                let breakDecodedText = this.value.split('-');
+
+                console.log(breakDecodedText);
+
+                // set kode_numbering
+                @this.numberingInput = breakDecodedText[i];
+
+                // set so_det_id
+                @this.sizeInput = breakDecodedText[j];
+
+                // set size
+                @this.sizeInputText = breakDecodedText[k];
             }
-
-            // break decoded text
-            let breakDecodedText = this.value.split('-');
-
-            console.log(breakDecodedText);
-
-            // set kode_numbering
-            @this.numberingInput = breakDecodedText[i];
-
-            // set so_det_id
-            @this.sizeInput = breakDecodedText[j];
-
-            // set size
-            @this.sizeInputText = breakDecodedText[k];
 
             // submit
             @this.submitInput();
@@ -471,18 +469,16 @@
             let k = 2;
 
             if (this.value.includes('WIP')) {
-                i = 3;
-                j = 4;
-                k = 5;
+                @this.pushRapidRework(null, null, null, this.value);
+            } else {
+                // break decoded text
+                let breakDecodedText = this.value.split('-');
+
+                console.log(breakDecodedText);
+
+                // submit
+                @this.pushRapidRework(breakDecodedText[i], breakDecodedText[j], breakDecodedText[k], null);
             }
-
-            // break decoded text
-            let breakDecodedText = this.value.split('-');
-
-            console.log(breakDecodedText);
-
-            // submit
-            @this.pushRapidRework(breakDecodedText[i], breakDecodedText[j], breakDecodedText[k]);
 
             this.value = '';
         });

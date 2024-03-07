@@ -308,7 +308,7 @@
 
     @if (!$panels)
         {{-- Back --}}
-        <a wire:click="toProductionPanel" class="back bg-rft-sec text-light text-center w-auto" id="back-button">
+        <a wire:click="toProductionPanel" class="back bg-success text-light text-center w-auto" id="back-button">
             <i class="fa-regular fa-reply"></i>
         </a>
     @endif
@@ -370,21 +370,22 @@
                         let k = 2;
 
                         if (scannedQrCode.includes('WIP')) {
-                            i = 3;
-                            j = 4;
-                            k = 5;
+                            @this.scannedNumberingCode = scannedQrCode;
+                        } else {
+                            // break decoded text
+                            let breakDecodedText = scannedQrCode.split('-');
+
+                            console.log(breakDecodedText);
+
+                            // set kode_numbering
+                            @this.scannedNumberingInput = breakDecodedText[i];
+
+                            // set so_det_id
+                            @this.scannedSizeInput = breakDecodedText[j];
+
+                            // set size
+                            @this.scannedSizeInputText = breakDecodedText[k];
                         }
-
-                        let breakDecodedText = scannedQrCode.split('-');
-
-                        // set kode_numbering
-                        @this.scannedNumberingInput = breakDecodedText[i];
-
-                        // set so_det_id
-                        @this.scannedSizeInput = breakDecodedText[j];
-
-                        // set size
-                        @this.scannedSizeInputText = breakDecodedText[k];
                     }
                 }
 

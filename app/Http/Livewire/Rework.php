@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Nds\Numbering;
 use App\Models\SignalBit\MasterPlan;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Defect;
@@ -51,6 +52,7 @@ class Rework extends Component
     public $rework;
     public $sizeInputText;
     public $numberingInput;
+    public $numberingCode;
 
     public $rapidRework;
     public $rapidReworkCount;
@@ -95,6 +97,7 @@ class Rework extends Component
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->numberingInput = null;
+        $this->numberingCode = null;
 
         if ($panel == 'rework') {
             $this->emit('qrInputFocus', 'rework');
@@ -133,6 +136,7 @@ class Rework extends Component
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->numberingInput = null;
+        $this->numberingCode = null;
 
         $this->rapidRework = [];
         $this->rapidReworkCount = 0;
@@ -176,7 +180,7 @@ class Rework extends Component
     }
 
     public function submitAllRework() {
-        $allDefect = Defect::selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_defects_packing.kode_numbering kode_numbering, output_defects_packing.so_det_id so_det_id')->
+        $allDefect = Defect::selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_reworks_packing.kode_numbering kode_numbering, output_defects_packing.so_det_id so_det_id')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->get();
@@ -196,11 +200,11 @@ class Rework extends Component
                     'master_plan_id' => $defect->master_plan_id,
                     'kode_numbering' => $defect->kode_numbering,
                     'so_det_id' => $defect->so_det_id,
-                    "status" => "REWORK",
-                    "rework_id" => $createRework->id,
+                    'status' => "REWORK",
+                    'rework_id' => $createRework->id,
                     'created_by' => Auth::user()->id,
-                    "created_at" => Carbon::now(),
-                    "updated_at" => Carbon::now()
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
                 ]);
             }
             // update defect
@@ -338,6 +342,16 @@ class Rework extends Component
     {
         $this->emit('renderQrScanner', 'rework');
 
+        if ($this->numberingCode) {
+            $numberingData = Numbering::where("kode", $this->numberingCode)->first();
+
+            if ($numberingData) {
+                $this->sizeInput = $numberingData->so_det_id;
+                $this->sizeInputText = $numberingData->size;
+                $this->numberingInput = $numberingData->no_cut_size;
+            }
+        }
+
         $validatedData = $this->validate();
 
         $scannedDefectData = Defect::where("defect_status", "defect")->where("kode_numbering", $this->numberingInput)->first();
@@ -363,6 +377,11 @@ class Rework extends Component
                 'rework_id' => $createRework->id
             ]);
 
+            $this->sizeInput = '';
+            $this->sizeInputText = '';
+            $this->numberingInput = '';
+            $this->numberingCode = '';
+
             if ($createRework && $createRft) {
                 $this->emit('alert', 'success', "DEFECT dengan ID : ".$scannedDefectData->id." berhasil di REWORK.");
             } else {
@@ -373,7 +392,8 @@ class Rework extends Component
         }
     }
 
-    public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText) {
+    public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText, $scannedNumberingCode) {
+        $this->numberingCode = $scannedNumberingCode;
         $this->numberingInput = $scannedNumbering;
         $this->sizeInput = $scannedSize;
         $this->sizeInputText = $scannedSizeText;
@@ -381,22 +401,34 @@ class Rework extends Component
         $this->submitInput();
     }
 
-    public function pushRapidRework($numberingInput, $sizeInput, $sizeInputText) {
+    public function pushRapidRework($numberingInput, $sizeInput, $sizeInputText, $numberingCode) {
         $exist = false;
+
         foreach ($this->rapidRework as $item) {
-            if ($item['numberingInput'] == $numberingInput) {
+            if (($numberingInput && $item['numberingInput'] == $numberingInput) || ($numberingCode && $item['numberingCode'] == $numberingCode)) {
                 $exist = true;
             }
         }
 
         if (!$exist) {
+            $this->rapidReworkCount += 1;
+
+            if ($numberingCode) {
+                $numberingData = Numbering::where("kode", $numberingCode)->first();
+
+                if ($numberingData) {
+                    $sizeInput = $numberingData->so_det_id;
+                    $sizeInputText = $numberingData->size;
+                    $numberingInput = $numberingData->no_cut_size;
+                }
+            }
+
             array_push($this->rapidRework, [
                 'numberingInput' => $numberingInput,
                 'sizeInput' => $sizeInput,
                 'sizeInputText' => $sizeInputText,
+                'numberingCode' => $numberingCode,
             ]);
-
-            $this->rapidReworkCount += 1;
         }
     }
 

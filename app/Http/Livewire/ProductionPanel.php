@@ -11,6 +11,7 @@ use App\Models\SignalBit\DefectArea;
 use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\Rework;
 use App\Models\SignalBit\Undo;
+use App\Models\Nds\Numbering;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -51,6 +52,7 @@ class ProductionPanel extends Component
     public $undoDefectArea;
 
     // Input
+    public $scannedNumberingCode;
     public $scannedNumberingInput;
     public $scannedSizeInput;
     public $scannedSizeInputText;
@@ -389,7 +391,8 @@ class ProductionPanel extends Component
             ->leftJoin('mastersupplier', 'mastersupplier.id_supplier', '=', 'act_costing.id_buyer')
             ->leftJoin('master_size_new', 'master_size_new.size', '=', 'so_det.size')
             ->leftJoin('masterproduct', 'masterproduct.id', '=', 'act_costing.id_product')
-            ->where('so_det.cancel', 'N');
+            ->where('so_det.cancel', '!=', 'Y')
+            ->where('master_plan.cancel', '!=', 'Y');
             if (Auth::user()->Groupp == "SEWING") {
                 $orderWsDetailsSql->where('master_plan.sewing_line', Auth::user()->username);
             }
@@ -458,24 +461,34 @@ class ProductionPanel extends Component
     public function setAndSubmitInput($type) {
         $this->emit('loadingStart');
 
+        if ($this->scannedNumberingCode) {
+            $numberingData = Numbering::where("kode", $this->scannedNumberingCode)->first();
+
+            if ($numberingData) {
+                $this->scannedSizeInput = $numberingData->so_det_id;
+                $this->scannedSizeInputText = $numberingData->size;
+                $this->scannedNumberingInput = $numberingData->no_cut_size;
+            }
+        }
+
         if ($type == "rft") {
             $this->toRft();
-            $this->emit('setAndSubmitInputRft', $this->scannedNumberingInput, $this->scannedSizeInput, $this->scannedSizeInputText);
+            $this->emit('setAndSubmitInputRft', $this->scannedNumberingInput, $this->scannedSizeInput, $this->scannedSizeInputText, $this->scannedNumberingCode);
         }
 
         if ($type == "defect") {
             $this->toDefect();
-            $this->emit('setAndSubmitInputDefect', $this->scannedNumberingInput, $this->scannedSizeInput, $this->scannedSizeInputText);
+            $this->emit('setAndSubmitInputDefect', $this->scannedNumberingInput, $this->scannedSizeInput, $this->scannedSizeInputText, $this->scannedNumberingCode);
         }
 
         if ($type == "reject") {
             $this->toReject();
-            $this->emit('setAndSubmitInputReject', $this->scannedNumberingInput, $this->scannedSizeInput, $this->scannedSizeInputText);
+            $this->emit('setAndSubmitInputReject', $this->scannedNumberingInput, $this->scannedSizeInput, $this->scannedSizeInputText, $this->scannedNumberingCode);
         }
 
         if ($type == "rework") {
             $this->toRework();
-            $this->emit('setAndSubmitInputRework', $this->scannedNumberingInput, $this->scannedSizeInput, $this->scannedSizeInputText);
+            $this->emit('setAndSubmitInputRework', $this->scannedNumberingInput, $this->scannedSizeInput, $this->scannedSizeInputText, $this->scannedNumberingCode);
         }
     }
 
@@ -542,7 +555,7 @@ class ProductionPanel extends Component
                 break;
             case 'rework' :
                 $this->undoSizes = Rework::selectRaw('so_det.id as so_det_id, so_det.size, count(*) as total')->
-                    leftJoin('output_defects_packing', 'output_defects_packing.id', '=', 'output_reworks.defect_id')->
+                    leftJoin('output_defects_packing', 'output_defects_packing.id', '=', 'output_reworks_packing.defect_id')->
                     leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
                     where('output_defects_packing.master_plan_id', $this->orderInfo->id)->
                     where('output_reworks_packing.status', 'NORMAL')->
