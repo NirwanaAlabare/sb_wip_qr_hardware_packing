@@ -344,13 +344,11 @@
             if (@this.orderDate != currentDate) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Tidak dapat mengakses Master Plan yang sudah berlalu',
-                    html: `Jika sempat, Mohon tutup tab browser yang tidak terpakai agar meminimalisir kesalahan`,
+                    title: 'Anda sedang mengakses Master Plan yang sudah berlalu',
+                    html: `Master Plan yang anda akses berasal dari tanggal <br> <b>'`+ document.getElementById('tanggal').value +`'</b> <br> `,
                     showConfirmButton: true,
                     confirmButtonText: 'Oke',
                     confirmButtonColor: '#6531a0'
-                }).then((result) => {
-                    window.location.href = '{{ route('index') }}';
                 });
             }
         }
