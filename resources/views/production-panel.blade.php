@@ -1,4 +1,4 @@
-@extends('layouts.index')
+@extends('layouts.index', ['orderDate' => $orderInfo->tgl_plan])
 
 @section('content')
     {{-- Production Panel Livewire --}}

@@ -1,3 +1,11 @@
+@php
+    $thisOrderDate = date('Y-m-d');
+    $disableDate = false;
+    if (isset($orderDate) && $orderDate) {
+        $thisOrderDate = $orderDate;
+        $disableDate = true;
+    }
+@endphp
 <header>
     <nav class="navbar bg-body-secondary navbar-expand">
         <div class="container-fluid">
@@ -14,7 +22,7 @@
                     </div>
                     <div class="col-md-auto">
                         <li class="nav-item w-100">
-                            <input type="date" class="form-control form-control-sm" id="tanggal" name="tanggal">
+                            <input type="date" class="form-control form-control-sm" id="tanggal" name="tanggal" value="{{ $thisOrderDate }}" {{ $disableDate == true ? "readonly" : "" }}>
                         </li>
                     </div>
                     <div class="col-md-auto">
