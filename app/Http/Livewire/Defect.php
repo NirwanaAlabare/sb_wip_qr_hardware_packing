@@ -28,7 +28,7 @@ class Defect extends Component
     public $sizeInput;
     public $sizeInputText;
     public $numberingInput;
-    public $numberingCode;
+    public $noCutInput;
     public $defect;
 
     public $defectTypes;
@@ -52,6 +52,7 @@ class Defect extends Component
 
     protected $rules = [
         'sizeInput' => 'required',
+        'noCutInput' => 'required',
         'numberingInput' => 'required|unique:output_rfts_packing,kode_numbering|unique:output_defects_packing,kode_numbering|unique:output_rejects_packing,kode_numbering',
         // 'productType' => 'required',
         'defectType' => 'required',
@@ -62,6 +63,7 @@ class Defect extends Component
 
     protected $messages = [
         'sizeInput.required' => 'Harap scan qr.',
+        'noCutInput.required' => 'Harap scan qr.',
         'numberingInput.required' => 'Harap scan qr.',
         'numberingInput.unique' => 'Kode qr sudah discan.',
         // 'productType.required' => 'Harap tentukan tipe produk.',
@@ -114,8 +116,8 @@ class Defect extends Component
     {
         $this->sizeInput = null;
         $this->sizeInputText = null;
+        $this->noCutInput = null;
         $this->numberingInput = null;
-        $this->numberingCode = null;
 
         $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
@@ -234,24 +236,27 @@ class Defect extends Component
 
     public function preSubmitInput()
     {
-        if ($this->numberingCode) {
-            $numberingData = Numbering::where("kode", $this->numberingCode)->first();
+        if ($this->numberingInput) {
+            $numberingData = Numbering::where("kode", $this->numberingInput)->first();
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
                 $this->sizeInputText = $numberingData->size;
-                $this->numberingInput = $numberingData->no_cut_size;
+                $this->noCutInput = $numberingData->no_cut_size;
             }
         }
 
         $validation = Validator::make([
             'sizeInput' => $this->sizeInput,
+            'noCutInput' => $this->noCutInput,
             'numberingInput' => $this->numberingInput
         ], [
             'sizeInput' => 'required',
+            'noCutInput' => 'required',
             'numberingInput' => 'required|unique:output_rfts_packing,kode_numbering|unique:output_defects_packing,kode_numbering|unique:output_rejects_packing,kode_numbering'
         ], [
             'sizeInput.required' => 'Harap scan qr.',
+            'noCutInput.required' => 'Harap scan qr.',
             'numberingInput.required' => 'Harap scan qr.',
             'numberingInput.unique' => 'Kode qr sudah discan.',
         ]);
@@ -290,6 +295,7 @@ class Defect extends Component
         if ($this->orderWsDetailSizes->where('size', $this->sizeInputText)->count() > 0) {
             $insertDefect = DefectModel::create([
                 'master_plan_id' => $this->orderInfo->id,
+                'no_cut_size' => $this->noCutInput,
                 'kode_numbering' => $this->numberingInput,
                 'so_det_id' => $this->sizeInput,
                 // 'product_type_id' => $this->productType,
@@ -316,7 +322,7 @@ class Defect extends Component
                 $this->sizeInput = '';
                 $this->sizeInputText = '';
                 $this->numberingInput = '';
-                $this->numberingCode = '';
+                $this->noCutInput = '';
             } else {
                 $this->emit('alert', 'error', "Terjadi kesalahan. Output tidak berhasil direkam.");
             }
@@ -327,8 +333,7 @@ class Defect extends Component
         }
     }
 
-    public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText, $scannedNumberingCode) {
-        $this->numberingCode = $scannedNumberingCode;
+    public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText) {
         $this->numberingInput = $scannedNumbering;
         $this->sizeInput = $scannedSize;
         $this->sizeInputText = $scannedSizeText;
@@ -336,10 +341,10 @@ class Defect extends Component
         $this->preSubmitInput();
     }
 
-    public function pushRapidDefect($numberingInput, $sizeInput, $sizeInputText, $numberingCode) {
+    public function pushRapidDefect($numberingInput, $sizeInput, $sizeInputText) {
         $exist = false;
         foreach ($this->rapidDefect as $item) {
-            if (($numberingInput && $item['numberingInput'] == $numberingInput) || ($numberingCode && $item['numberingCode'] == $numberingCode)) {
+            if (($numberingInput && $item['numberingInput'] == $numberingInput)) {
                 $exist = true;
             }
         }
@@ -347,13 +352,13 @@ class Defect extends Component
         if (!$exist) {
             $this->rapidDefectCount += 1;
 
-            if ($numberingCode) {
-                $numberingData = Numbering::where("kode", $numberingCode)->first();
+            if ($numberingInput) {
+                $numberingData = Numbering::where("kode", $numberingInput)->first();
 
                 if ($numberingData) {
                     $sizeInput = $numberingData->so_det_id;
                     $sizeInputText = $numberingData->size;
-                    $numberingInput = $numberingData->no_cut_size;
+                    $noCutInput = $numberingData->no_cut_size;
                 }
             }
 
@@ -361,7 +366,7 @@ class Defect extends Component
                 'numberingInput' => $numberingInput,
                 'sizeInput' => $sizeInput,
                 'sizeInputText' => $sizeInputText,
-                'numberingCode' => $numberingCode,
+                'noCutInput' => $noCutInput,
             ]);
         }
     }
@@ -391,6 +396,7 @@ class Defect extends Component
                     array_push($rapidDefectFiltered, [
                         'master_plan_id' => $this->orderInfo->id,
                         'so_det_id' => $this->rapidDefect[$i]['sizeInput'],
+                        'no_cut_size' => $this->rapidDefect[$i]['noCutInput'],
                         'kode_numbering' => $this->rapidDefect[$i]['numberingInput'],
                         'defect_type_id' => $this->defectType,
                         'defect_area_id' => $this->defectArea,

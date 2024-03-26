@@ -17,6 +17,7 @@ class Rft extends Model
         'id',
         'master_plan_id',
         'so_det_id',
+        'no_cut_size',
         'kode_numbering',
         'status',
         'rework_id',

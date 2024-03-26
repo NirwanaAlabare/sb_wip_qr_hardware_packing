@@ -17,6 +17,7 @@ class Reject extends Model
         'id',
         'master_plan_id',
         'so_det_id',
+        'no_cut_size',
         'kode_numbering',
         'status',
         'created_at',

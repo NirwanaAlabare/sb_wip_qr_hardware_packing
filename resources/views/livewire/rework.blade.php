@@ -433,27 +433,7 @@
         var scannedReworkItemInput = document.getElementById("scannedReworkItem");
 
         scannedReworkItemInput.addEventListener("change", function () {
-            let i = 0;
-            let j = 1;
-            let k = 2;
-
-            if (this.value.includes('WIP')) {
-                @this.numberingCode = this.value;
-            } else {
-                // break decoded text
-                let breakDecodedText = this.value.split('-');
-
-                console.log(breakDecodedText);
-
-                // set kode_numbering
-                @this.numberingInput = breakDecodedText[i];
-
-                // set so_det_id
-                @this.sizeInput = breakDecodedText[j];
-
-                // set size
-                @this.sizeInputText = breakDecodedText[k];
-            }
+            @this.numberingInput = this.value;
 
             // submit
             @this.submitInput();
@@ -464,21 +444,7 @@
         var scannedRapidReworkInput = document.getElementById("rapid-rework-input");
 
         scannedRapidReworkInput.addEventListener("change", function () {
-            let i = 0;
-            let j = 1;
-            let k = 2;
-
-            if (this.value.includes('WIP')) {
-                @this.pushRapidRework(null, null, null, this.value);
-            } else {
-                // break decoded text
-                let breakDecodedText = this.value.split('-');
-
-                console.log(breakDecodedText);
-
-                // submit
-                @this.pushRapidRework(breakDecodedText[i], breakDecodedText[j], breakDecodedText[k], null);
-            }
+            @this.pushRapidRework(this.value, null, null);
 
             this.value = '';
         });

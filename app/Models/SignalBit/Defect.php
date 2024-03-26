@@ -17,6 +17,7 @@ class Defect extends Model
         'id',
         'master_plan_id',
         'so_det_id',
+        'no_cut_size',
         'kode_numbering',
         'product_type_id',
         'defect_type_id',

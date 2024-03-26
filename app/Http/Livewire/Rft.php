@@ -21,19 +21,21 @@ class Rft extends Component
     public $output;
     public $sizeInput;
     public $sizeInputText;
+    public $noCutInput;
     public $numberingInput;
-    public $numberingCode;
     public $rapidRft;
     public $rapidRftCount;
     public $rft;
 
     protected $rules = [
         'sizeInput' => 'required',
+        'noCutInput' => 'required',
         'numberingInput' => 'required|unique:output_rfts_packing,kode_numbering|unique:output_defects_packing,kode_numbering|unique:output_rejects_packing,kode_numbering',
     ];
 
     protected $messages = [
         'sizeInput.required' => 'Harap scan qr.',
+        'noCutInput.required' => 'Harap scan qr.',
         'numberingInput.required' => 'Harap scan qr.',
         'numberingInput.unique' => 'Kode qr sudah discan.',
     ];
@@ -51,8 +53,8 @@ class Rft extends Component
         $this->output = 0;
         $this->sizeInput = null;
         $this->sizeInputText = null;
+        $this->noCutInput = null;
         $this->numberingInput = null;
-        $this->numberingCode = null;
         $this->rapidRft = [];
         $this->rapidRftCount = 0;
         $this->submitting = false;
@@ -73,8 +75,8 @@ class Rft extends Component
     {
         $this->sizeInput = null;
         $this->sizeInputText = null;
+        $this->noCutInput = null;
         $this->numberingInput = null;
-        $this->numberingCode = null;
 
         $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
@@ -107,13 +109,13 @@ class Rft extends Component
     {
         $this->emit('qrInputFocus', 'rft');
 
-        if ($this->numberingCode) {
-            $numberingData = Numbering::where("kode", $this->numberingCode)->first();
+        if ($this->numberingInput) {
+            $numberingData = Numbering::where("kode", $this->numberingInput)->first();
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
                 $this->sizeInputText = $numberingData->size;
-                $this->numberingInput = $numberingData->no_cut_size;
+                $this->noCutInput = $numberingData->no_cut_size;
             }
         }
 
@@ -125,6 +127,7 @@ class Rft extends Component
             $insertRft = RftModel::create([
                 'master_plan_id' => $this->orderInfo->id,
                 'so_det_id' => $this->sizeInput,
+                'no_cut_size' => $this->noCutInput,
                 'kode_numbering' => $this->numberingInput,
                 'status' => 'NORMAL',
                 'created_at' => Carbon::now(),
@@ -136,8 +139,8 @@ class Rft extends Component
 
                 $this->sizeInput = '';
                 $this->sizeInputText = '';
+                $this->noCutInput = '';
                 $this->numberingInput = '';
-                $this->numberingCode = '';
             } else {
                 $this->emit('alert', 'error', "Terjadi kesalahan. Output tidak berhasil direkam.");
             }
@@ -146,11 +149,11 @@ class Rft extends Component
         }
     }
 
-    public function pushRapidRft($numberingInput, $sizeInput, $sizeInputText, $numberingCode) {
+    public function pushRapidRft($numberingInput, $sizeInput, $sizeInputText) {
         $exist = false;
 
         foreach ($this->rapidRft as $item) {
-            if (($numberingInput && $item['numberingInput'] == $numberingInput) || ($numberingCode && $item['numberingCode'] == $numberingCode)) {
+            if (($numberingInput && $item['numberingInput'] == $numberingInput)) {
                 $exist = true;
             }
         }
@@ -158,13 +161,13 @@ class Rft extends Component
         if (!$exist) {
             $this->rapidRftCount += 1;
 
-            if ($numberingCode) {
-                $numberingData = Numbering::where("kode", $numberingCode)->first();
+            if ($numberingInput) {
+                $numberingData = Numbering::where("kode", $numberingInput)->first();
 
                 if ($numberingData) {
                     $sizeInput = $numberingData->so_det_id;
                     $sizeInputText = $numberingData->size;
-                    $numberingInput = $numberingData->no_cut_size;
+                    $noCutInput = $numberingData->no_cut_size;
                 }
             }
 
@@ -172,7 +175,7 @@ class Rft extends Component
                 'numberingInput' => $numberingInput,
                 'sizeInput' => $sizeInput,
                 'sizeInputText' => $sizeInputText,
-                'numberingCode' => $numberingCode,
+                'noCutInput' => $noCutInput,
             ]);
         }
     }
@@ -191,6 +194,7 @@ class Rft extends Component
                     array_push($rapidRftFiltered, [
                         'master_plan_id' => $this->orderInfo->id,
                         'so_det_id' => $this->rapidRft[$i]['sizeInput'],
+                        'no_cut_size' => $this->rapidRft[$i]['noCutInput'],
                         'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
                         'status' => 'NORMAL',
                         'created_at' => Carbon::now(),
