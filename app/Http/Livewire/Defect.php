@@ -268,7 +268,7 @@ class Defect extends Component
         } else {
             $endlineOutputData = EndlineOutput::where("kode_numbering", $this->numberingInput)->first();
 
-            if ($endlineOutputData && $this->orderWsDetailSizes->where('size', $this->sizeInputText)->count() > 0) {
+            if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
                 $this->emit('clearSelectDefectAreaPoint');
 
                 $this->defectType = null;
@@ -292,7 +292,7 @@ class Defect extends Component
     {
         $validatedData = $this->validate();
 
-        if ($this->orderWsDetailSizes->where('size', $this->sizeInputText)->count() > 0) {
+        if ($this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
             $insertDefect = DefectModel::create([
                 'master_plan_id' => $this->orderInfo->id,
                 'no_cut_size' => $this->noCutInput,
@@ -392,7 +392,7 @@ class Defect extends Component
             for ($i = 0; $i < count($this->rapidDefect); $i++) {
                 $endlineOutputCount = EndLineOutput::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count();
 
-                if (($endlineOutputCount > 0) && !(DefectModel::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Rft::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('size', $this->rapidDefect[$i]['sizeInputText'])->count() > 0)) {
+                if (($endlineOutputCount > 0) && !(DefectModel::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Rft::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('so_det_id', $this->rapidDefect[$i]['sizeInput'])->count() > 0)) {
                     array_push($rapidDefectFiltered, [
                         'master_plan_id' => $this->orderInfo->id,
                         'so_det_id' => $this->rapidDefect[$i]['sizeInput'],

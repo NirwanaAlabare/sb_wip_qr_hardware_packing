@@ -120,7 +120,7 @@ class Reject extends Component
 
         $endlineOutputData = EndlineOutput::where("kode_numbering", $this->numberingInput)->first();
 
-        if ($endlineOutputData && $this->orderWsDetailSizes->where('size', $this->sizeInputText)->count() > 0) {
+        if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
             $insertReject = RejectModel::create([
                 'master_plan_id' => $this->orderInfo->id,
                 'so_det_id' => $this->sizeInput,
@@ -196,7 +196,7 @@ class Reject extends Component
             for ($i = 0; $i < count($this->rapidReject); $i++) {
                 $endlineOutputCount = EndlineOutput::where("kode_numbering", $this->rapidReject[$i]['numberingInput'])->count();
 
-                if (($endlineOutputCount > 0) && !(RejectModel::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0 || Rft::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0 || Defect::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('size', $this->rapidReject[$i]['sizeInputText'])->count() > 0)) {
+                if (($endlineOutputCount > 0) && !(RejectModel::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0 || Rft::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0 || Defect::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('so_det_id', $this->rapidReject[$i]['sizeInput'])->count() > 0)) {
                     array_push($rapidRejectFiltered, [
                         'master_plan_id' => $this->orderInfo->id,
                         'so_det_id' => $this->rapidReject[$i]['sizeInput'],

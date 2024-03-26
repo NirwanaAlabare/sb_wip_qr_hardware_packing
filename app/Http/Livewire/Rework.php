@@ -361,7 +361,7 @@ class Rework extends Component
 
         $scannedDefectData = Defect::where("defect_status", "defect")->where("kode_numbering", $this->numberingInput)->first();
 
-        if ($scannedDefectData && $this->orderWsDetailSizes->where('size', $this->sizeInputText)->count() > 0) {
+        if ($scannedDefectData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
             // add to rework
             $createRework = ReworkModel::create([
                 "defect_id" => $scannedDefectData->id,
@@ -447,7 +447,7 @@ class Rework extends Component
             for ($i = 0; $i < count($this->rapidRework); $i++) {
                 $scannedDefectData = Defect::where("defect_status", "defect")->where("kode_numbering", $this->rapidRework[$i]['numberingInput'])->first();
 
-                if (($scannedDefectData) && ($this->orderWsDetailSizes->where('size', $this->rapidRework[$i]['sizeInputText'])->count() > 0)) {
+                if (($scannedDefectData) && ($this->orderWsDetailSizes->where('so_det_id', $this->rapidRework[$i]['sizeInput'])->count() > 0)) {
                     $createRework = ReworkModel::create([
                         'defect_id' => $scannedDefectData->id,
                         'status' => 'NORMAL'

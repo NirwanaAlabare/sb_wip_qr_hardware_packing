@@ -123,7 +123,7 @@ class Rft extends Component
 
         $endlineOutputData = EndlineOutput::where("kode_numbering", $this->numberingInput)->first();
 
-        if ($endlineOutputData && $this->orderWsDetailSizes->where('size', $this->sizeInputText)->count() > 0) {
+        if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
             $insertRft = RftModel::create([
                 'master_plan_id' => $this->orderInfo->id,
                 'so_det_id' => $this->sizeInput,
@@ -190,7 +190,7 @@ class Rft extends Component
             for ($i = 0; $i < count($this->rapidRft); $i++) {
                 $endlineOutputCount = EndlineOutput::where("kode_numbering", $this->rapidRft[$i]['numberingInput'])->count();
 
-                if (($endlineOutputCount > 0) && !(RftModel::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Defect::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('size', $this->rapidRft[$i]['sizeInputText'])->count() > 0)) {
+                if (($endlineOutputCount > 0) && !(RftModel::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Defect::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('so_det_id', $this->rapidRft[$i]['sizeInput'])->count() > 0)) {
                     array_push($rapidRftFiltered, [
                         'master_plan_id' => $this->orderInfo->id,
                         'so_det_id' => $this->rapidRft[$i]['sizeInput'],
