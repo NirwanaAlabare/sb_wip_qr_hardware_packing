@@ -69,7 +69,7 @@
                                         <select class="form-select" style="border-radius: 0 15px 0 0" wire:model="selectedSize">
                                             <option value="all">All Sizes</option>
                                             @foreach ($orderWsDetailSizes as $order)
-                                                <option value="{{ $order->so_det_id }}">{{ $order->size }}</option>
+                                                <option value="{{ $order->so_det_id }}">{{ $order->size_dest }}</option>
                                             @endforeach
                                         </select>
                                         <p class="text-center fs-3 mt-auto mb-auto">{{ $outputFiltered }}</p>

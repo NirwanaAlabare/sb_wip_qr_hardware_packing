@@ -57,6 +57,9 @@
                             <div class="col-md-4">
                                 <div class="bg-rft text-white w-100 h-100 py-auto rounded-3 d-flex flex-column justify-content-center align-items-center">
                                     <p class="fs-3 mb-0">{{ $order->size }}</p>
+                                    @if ($order->dest != "-" && $order->dest != null)
+                                        <p class="fs-6 mb-0">{{ $order->dest }}</p>
+                                    @endif
                                     <p class="fs-5 mb-0">{{ $rft->where('so_det_id', $order->so_det_id)->count() }}</p>
                                 </div>
                             </div>
