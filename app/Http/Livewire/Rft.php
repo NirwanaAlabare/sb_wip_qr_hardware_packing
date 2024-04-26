@@ -10,6 +10,7 @@ use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\EndlineOutput;
 use App\Models\Nds\Numbering;
+use App\Models\Nds\OutputPacking;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use DB;
@@ -134,6 +135,17 @@ class Rft extends Component
                 'updated_at' => Carbon::now()
             ]);
 
+            $insertRftNds = OutputPacking::create([
+                'sewing_line' => $this->orderInfo->sewing_line,
+                'master_plan_id' => $this->orderInfo->id,
+                'so_det_id' => $this->sizeInput,
+                'no_cut_size' => $this->noCutInput,
+                'kode_numbering' => $this->numberingInput,
+                'status' => 'NORMAL',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ]);
+
             if ($insertRft) {
                 $this->emit('alert', 'success', "1 output berukuran ".$this->sizeInputText." berhasil terekam.");
 
@@ -182,6 +194,7 @@ class Rft extends Component
 
     public function submitRapidInput() {
         $rapidRftFiltered = [];
+        $rapidRftFilteredNds = [];
         $success = 0;
         $fail = 0;
 
@@ -201,6 +214,17 @@ class Rft extends Component
                         'updated_at' => Carbon::now()
                     ]);
 
+                    array_push($rapidRftFilteredNds, [
+                        'sewing_line' => $this->orderInfo->sewing_line,
+                        'master_plan_id' => $this->orderInfo->id,
+                        'so_det_id' => $this->rapidRft[$i]['sizeInput'],
+                        'no_cut_size' => $this->rapidRft[$i]['noCutInput'],
+                        'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
+                        'status' => 'NORMAL',
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+
                     $success += 1;
                 } else {
                     $fail += 1;
@@ -209,6 +233,7 @@ class Rft extends Component
         }
 
         $rapidRftInsert = RftModel::insert($rapidRftFiltered);
+        $rapidRftInsertNds = OutputPacking::insert($rapidRftFilteredNds);
 
         $this->emit('alert', 'success', $success." output berhasil terekam. ");
         $this->emit('alert', 'error', $fail." output gagal terekam.");

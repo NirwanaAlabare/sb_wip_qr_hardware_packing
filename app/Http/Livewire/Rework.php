@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Nds\Numbering;
+use App\Models\Nds\OutputPacking;
 use App\Models\SignalBit\MasterPlan;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Defect;
@@ -189,6 +190,7 @@ class Rework extends Component
 
         if ($allDefect->count() > 0) {
             $rftArray = [];
+            $rftArrayNds = [];
             foreach ($allDefect as $defect) {
                 // create rework
                 $createRework = ReworkModel::create([
@@ -209,6 +211,20 @@ class Rework extends Component
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now()
                 ]);
+
+                // add rft array nds
+                array_push($rftArrayNds, [
+                    'sewing_line' => $this->orderInfo->sewing_line,
+                    'master_plan_id' => $defect->master_plan_id,
+                    'no_cut_size' => $defect->no_cut_size,
+                    'kode_numbering' => $defect->kode_numbering,
+                    'so_det_id' => $defect->so_det_id,
+                    'status' => "REWORK",
+                    'rework_id' => $createRework->id,
+                    'created_by' => Auth::user()->id,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ]);
             }
             // update defect
             $updateDefect = Defect::where('master_plan_id', $this->orderInfo->id)->update([
@@ -217,6 +233,9 @@ class Rework extends Component
 
             // create rft
             $createRft = Rft::insert($rftArray);
+
+            // create rft nds
+            $createRftNds = OutputPacking::insert($rftArrayNds);
 
             if ($allDefect->count() > 0) {
                 $this->emit('alert', 'success', "Semua DEFECT berhasil di REWORK");
@@ -271,6 +290,17 @@ class Rework extends Component
                     'status' => 'REWORK',
                     'rework_id' => $createRework->id
                 ]);
+
+                // create rft nds
+                $createRftNds = OutputPacking::create([
+                    'sewing_line' => $this->orderInfo->sewing_line,
+                    'master_plan_id' => $defect->master_plan_id,
+                    'no_cut_size' => $defect->no_cut_size,
+                    'kode_numbering' => $defect->kode_numbering,
+                    'so_det_id' => $defect->so_det_id,
+                    'status' => 'REWORK',
+                    'rework_id' => $createRework->id
+                ]);
             }
 
             if ($selectedDefect->count() > 0) {
@@ -312,6 +342,17 @@ class Rework extends Component
                 "rework_id" => $createRework->id
             ]);
 
+            // add to rft nds
+            $createRftNds = OutputPacking::create([
+                'sewing_line' => $this->orderInfo->sewing_line,
+                'master_plan_id' => $getDefect->master_plan_id,
+                'no_cut_size' => $getDefect->no_cut_size,
+                'kode_numbering' => $getDefect->kode_numbering,
+                'so_det_id' => $getDefect->so_det_id,
+                "status" => "REWORK",
+                "rework_id" => $createRework->id
+            ]);
+
             if ($createRework && $updateDefect && $createRft) {
                 $this->emit('alert', 'success', "DEFECT dengan ID : ".$defectId." berhasil di REWORK.");
             } else {
@@ -335,6 +376,9 @@ class Rework extends Component
 
         // delete from rft
         $deleteRft = Rft::where('rework_id', $reworkId)->delete();
+
+        // delete from rft nds
+        $deleteRftNds = OutputPacking::where('rework_id', $reworkId)->delete();
 
         if ($deleteRework && $updateDefect && $deleteRft) {
             $this->emit('alert', 'success', "REWORK dengan REWORK ID : ".$reworkId." dan DEFECT ID : ".$defectId." berhasil di kembalikan ke DEFECT.");
@@ -375,6 +419,17 @@ class Rework extends Component
 
             // add to rft
             $createRft = Rft::create([
+                'master_plan_id' => $defect->master_plan_id,
+                'no_cut_size' => $defect->no_cut_size,
+                'kode_numbering' => $defect->kode_numbering,
+                'so_det_id' => $defect->so_det_id,
+                'status' => 'REWORK',
+                'rework_id' => $createRework->id
+            ]);
+
+            // add to rft nds
+            $createRftNds = OutputPacking::create([
+                'sewing_line' => $this->orderInfo->sewing_line,
                 'master_plan_id' => $defect->master_plan_id,
                 'no_cut_size' => $defect->no_cut_size,
                 'kode_numbering' => $defect->kode_numbering,
@@ -440,6 +495,7 @@ class Rework extends Component
     public function submitRapidInput() {
         $defectIds = [];
         $rftData = [];
+        $rftDataNds = [];
         $success = 0;
         $fail = 0;
 
@@ -466,6 +522,18 @@ class Rework extends Component
                         'updated_at' => Carbon::now()
                     ]);
 
+                    array_push($rftDataNds, [
+                        'sewing_line' => $this->orderInfo->sewing_line,
+                        'master_plan_id' => $this->orderInfo->id,
+                        'so_det_id' => $scannedDefectData->so_det_id,
+                        'no_cut_size' => $scannedDefectData->no_cut_size,
+                        'kode_numbering' => $scannedDefectData->kode_numbering,
+                        'rework_id' => $createRework->id,
+                        'status' => 'REWORK',
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+
                     $success += 1;
                 } else {
                     $fail += 1;
@@ -477,6 +545,7 @@ class Rework extends Component
 
         $rapidDefectUpdate = Defect::whereIn('id', $defectIds)->update(["defect_status" => "reworked"]);
         $rapidRftInsert = Rft::insert($rftData);
+        $rapidRftInsertNds = OutputPacking::insert($rftDataNds);
 
         $this->emit('alert', 'success', $success." output berhasil terekam. ");
         $this->emit('alert', 'error', $fail." output gagal terekam.");
