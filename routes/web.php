@@ -32,7 +32,8 @@ Route::middleware('auth')->group(function () {
     })->name('index');
 
     Route::controller(ProductionController::class)->prefix('production-panel')->group(function () {
-        Route::get('/{id}', 'index')->name('production-panel');
+        Route::get('/index/{id}', 'index')->name('production-panel');
+        Route::get('/universal', 'universal')->name('production-panel-universal');
     });
 
     Route::controller(ProfileController::class)->prefix('profile')->group(function () {

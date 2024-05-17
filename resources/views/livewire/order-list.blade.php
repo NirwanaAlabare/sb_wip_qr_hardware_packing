@@ -5,7 +5,10 @@
             <input type="text" class="form-control" wire:model='search' placeholder="Search Order...">
             <button class="btn btn-rft-sec" type="button" id="button-search-order"><i class="fa-regular fa-magnifying-glass"></i></button>
         </div>
-        <button class="btn btn-sb btn-rft-sec-outline mb-3" type="button" wire:click="preSubmitFilter"><i class="fa-regular fa-filter"></i></button>
+        <button class="btn btn-rft-sec-outline mb-3" type="button" wire:click="preSubmitFilter"><i class="fa-regular fa-filter"></i></button>
+        <a href="{{ url('/production-panel/universal/') }}" class="btn btn-rft-sec mb-3">
+            <i class="fa-solid fa-globe"></i>
+        </a href="/production-panel/universal/">
     </div>
 
     <div class="w-100" wire:loading wire:target='search, date, filterLine, filterBuyer, filterWs, filterProductType, filterStyle'>
@@ -22,7 +25,7 @@
             <h5 class="text-center text-muted mt-3"><i class="fa-solid fa-circle-exclamation"></i> Order tidak ditemukan</h5>
         @else
             @foreach ($orders as $order)
-                <a href="{{ $this->baseUrl."/production-panel/".$order->id }}" class="order col-md-6 h-100">
+                <a href="{{ $this->baseUrl."/production-panel/index/".$order->id }}" class="order col-md-6 h-100">
                     <div class="card h-100">
                         <div class="card-body justify-content-start">
                             <table class="table table-responsive mb-1">
@@ -71,7 +74,7 @@
                             </div>
                         </div>
                     </div>
-                </a href="{{ $this->baseUrl."/production-panel/".$order->id }}">
+                </a href="{{ $this->baseUrl."/production-panel/index/".$order->id }}">
             @endforeach
         @endif
     </div>

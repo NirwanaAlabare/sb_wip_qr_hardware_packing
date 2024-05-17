@@ -136,4 +136,8 @@ class ProductionController extends Controller
     {
         //
     }
+
+    public function universal() {
+        return view('production-panel-universal');
+    }
 }
