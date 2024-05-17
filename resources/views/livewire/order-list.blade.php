@@ -6,9 +6,9 @@
             <button class="btn btn-rft-sec" type="button" id="button-search-order"><i class="fa-regular fa-magnifying-glass"></i></button>
         </div>
         <button class="btn btn-rft-sec-outline mb-3" type="button" wire:click="preSubmitFilter"><i class="fa-regular fa-filter"></i></button>
-        <a href="{{ url('/production-panel/universal/') }}" class="btn btn-rft-sec mb-3">
+        <a href="{{ $this->baseUrl.'/production-panel/universal/' }}" class="btn btn-rft-sec mb-3">
             <i class="fa-solid fa-globe"></i>
-        </a href="/production-panel/universal/">
+        </a href="{{ $this->baseUrl.'/production-panel/universal/' }}">
     </div>
 
     <div class="w-100" wire:loading wire:target='search, date, filterLine, filterBuyer, filterWs, filterProductType, filterStyle'>
