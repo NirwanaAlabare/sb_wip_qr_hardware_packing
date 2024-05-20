@@ -13,7 +13,7 @@
         </div>
 
         {{-- Production Panels --}}
-        <h5 class="text-center text-sb fw-bold mb-3">Universal Input</h5>
+        <h5 class="text-center text-sb fw-bold mb-3">Global Input</h5>
         <div class="production-panel row row-gap-3" id="production-panel">
             @if ($panels)
                 <div class="row row-gap-3">
