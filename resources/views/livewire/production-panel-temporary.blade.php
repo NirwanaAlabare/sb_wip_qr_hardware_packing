@@ -1,6 +1,6 @@
 <div>
     <div wire:poll.visible.30000ms>
-        <div class="loading-container-fullscreen" wire:loading wire:target="toRft, toDefect, toDefectHistory, toReject, toRework, toProductionPanel, preSubmitUndo, submitUndo, updateOrder, toProductionPanel, setAndSubmitInput, submitInput">
+        <div class="loading-container-fullscreen" wire:loading wire:target="toRft, toDefect, toDefectHistory, toReject, toRework, toProductionPanel, preSubmitUndo, submitUndo, updateOrder, toProductionPanel, setAndSubmitInput, submitInput, uploadToMasterPlan">
             <div class="loading-container">
                 <div class="loading"></div>
             </div>
@@ -13,7 +13,7 @@
         </div>
 
         {{-- Production Panels --}}
-        <h5 class="text-center text-rft-sec fw-bold mb-3">Global Input</h5>
+        <h5 class="text-center text-rft-sec fw-bold mb-3">Temporary Input</h5>
         <div class="production-panel row row-gap-3" id="production-panel">
             @if ($panels)
                 <div class="row row-gap-3">
@@ -62,19 +62,22 @@
                         </div>
                     </div>
                 </div>
+                <div class="d-flex">
+                    <button class="btn btn-rft-sec w-100" wire:click='uploadToMasterPlan()'><i class="fa-regular fa-paper-plane"></i> Upload ke Master Plan</button>
+                </div>
             @endif
 
             {{-- Rft --}}
             {{-- @if ($rft) --}}
             <div class="{{ $rft ? '' : 'd-none' }}">
-                @livewire('rft-universal', ["orderDate" => $orderDate, "orderWsDetailSizes" => $orderWsDetailSizes])
+                @livewire('rft-temporary', ["orderDate" => $orderDate, "orderWsDetailSizes" => $orderWsDetailSizes])
             </div>
             {{-- @endif --}}
 
             {{-- Defect --}}
             {{-- @if ($defect) --}}
             <div class="{{ $defect ? '' : 'd-none' }}">
-                @livewire('defect-universal', ["orderDate" => $orderDate, "orderWsDetailSizes" => $orderWsDetailSizes])
+                @livewire('defect-temporary', ["orderDate" => $orderDate, "orderWsDetailSizes" => $orderWsDetailSizes])
             </div>
             {{-- @endif --}}
 
@@ -86,13 +89,13 @@
             {{-- Reject --}}
             {{-- @if ($reject) --}}
             <div class="{{ $reject ? '' : 'd-none' }}">
-                @livewire('reject-universal', ["orderDate" => $orderDate, "orderWsDetailSizes" => $orderWsDetailSizes])
+                @livewire('reject-temporary', ["orderDate" => $orderDate, "orderWsDetailSizes" => $orderWsDetailSizes])
             </div>
             {{-- @endif --}}
 
             {{-- Rework --}}
             <div class="{{ $rework ? '' : 'd-none' }}">
-                @livewire('rework-universal', ["orderDate" => $orderDate, "orderWsDetailSizes" => $orderWsDetailSizes])
+                @livewire('rework-temporary', ["orderDate" => $orderDate, "orderWsDetailSizes" => $orderWsDetailSizes])
             </div>
         </div>
 

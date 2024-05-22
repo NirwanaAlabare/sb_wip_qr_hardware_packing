@@ -77,6 +77,18 @@
                 </a href="{{ $this->baseUrl."/production-panel/index/".$order->id }}">
             @endforeach
         @endif
+        <a href="{{ url('/production-panel/temporary/') }}" class="order col-md-6 h-100">
+            <div class="card h-100">
+                <div class="card-body justify-content-start">
+                    <div class="mx-2">
+                        <div class="d-flex justify-content-between align-items-center h-100">
+                            <h1 class="fw-bold mb-0">{{ $temporaryOutput }}</h1>
+                            <h5 class="text-rft-sec fw-bold mb-0">OUTPUT TEMPORARY</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a href="/production-panel/temporary/">
     </div>
 
     <div class="w-100 mt-3">

@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Models\SignalBit\MasterPlan;
 use App\Models\SignalBit\UserPassword;
+use App\Models\SignalBit\TemporaryOutput;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Session\SessionManager;
 use Livewire\Component;
@@ -24,6 +25,8 @@ class OrderList extends Component
     public $filterDate = '';
 
     public $listeners = ['setDate' => 'setDate'];
+
+    public $temporaryOutput;
 
     public function mount(SessionManager $session)
     {
@@ -192,6 +195,12 @@ class OrderList extends Component
             ->orderBy('output.progress', 'desc')
             ->orderBy('output_endline.progress', 'desc')
             ->get();
+
+        $this->temporaryOutput = TemporaryOutput::where("line_id", Auth::user()->line_id)->
+            whereRaw('(DATE(temporary_output_packing.created_at) = "'.$this->date.'" OR DATE(temporary_output_packing.updated_at) = "'.$this->date.'")')->
+            where('tipe_output', 'rft')->
+            orWhere('tipe_output', 'rework')->
+            count();
 
         return view('livewire.order-list');
     }
