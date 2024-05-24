@@ -22,7 +22,7 @@
 
     <div class="order-list row row-gap-3 mb-3 h-100" wire:loading.remove wire:target='search, date'>
         @if ($orders->isEmpty())
-            <h5 class="text-center text-muted mt-3"><i class="fa-solid fa-circle-exclamation"></i> Order tidak ditemukan</h5>
+            {{-- <h5 class="text-center text-muted mt-3"><i class="fa-solid fa-circle-exclamation"></i> Order tidak ditemukan</h5> --}}
         @else
             @foreach ($orders as $order)
                 <a href="{{ $this->baseUrl."/production-panel/index/".$order->id }}" class="order col-md-6 h-100">
