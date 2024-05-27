@@ -6,10 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="icon" type="image/x-icon" href="{{ asset('images/tabicon.png') }}">
-    <title>SB WIP - PACKING LINE</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/packingline.png') }}">
+    <title>NDS PACKING LINE QR</title>
 
     @include('layouts.link')
+
+    <script defer src="{{ asset('alpinejs/dist/cdn.min.js') }}"></script>
 </head>
 
 <body>
