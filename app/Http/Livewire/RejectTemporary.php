@@ -184,15 +184,15 @@ class RejectTemporary extends Component
                     $sizeInput = $numberingData->so_det_id;
                     $sizeInputText = $numberingData->size;
                     $noCutInput = $numberingData->no_cut_size;
+
+                    array_push($this->rapidReject, [
+                        'numberingInput' => $numberingInput,
+                        'sizeInput' => $sizeInput,
+                        'sizeInputText' => $sizeInputText,
+                        'noCutInput' => $noCutInput,
+                    ]);
                 }
             }
-
-            array_push($this->rapidReject, [
-                'numberingInput' => $numberingInput,
-                'sizeInput' => $sizeInput,
-                'sizeInputText' => $sizeInputText,
-                'noCutInput' => $noCutInput,
-            ]);
         }
     }
 

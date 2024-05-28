@@ -415,16 +415,16 @@ class DefectTemporary extends Component
                     $sizeInputText = $numberingData->size;
                     $noCutInput = $numberingData->no_cut_size;
                     $masterPlanId = $this->orderWsDetailSizes->where("so_det_id", $sizeInput)->first() ? $this->orderWsDetailSizes->where("so_det_id", $sizeInput)->first()['master_plan_id'] : null;
+
+                    array_push($this->rapidDefect, [
+                        'numberingInput' => $numberingInput,
+                        'sizeInput' => $sizeInput,
+                        'sizeInputText' => $sizeInputText,
+                        'noCutInput' => $noCutInput,
+                        'masterPlanId' => $masterPlanId
+                    ]);
                 }
             }
-
-            array_push($this->rapidDefect, [
-                'numberingInput' => $numberingInput,
-                'sizeInput' => $sizeInput,
-                'sizeInputText' => $sizeInputText,
-                'noCutInput' => $noCutInput,
-                'masterPlanId' => $masterPlanId
-            ]);
 
             $this->sizeInput = $sizeInput;
         }
