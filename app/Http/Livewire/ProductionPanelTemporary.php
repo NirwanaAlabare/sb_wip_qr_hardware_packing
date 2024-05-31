@@ -187,7 +187,7 @@ class ProductionPanelTemporary extends Component
         $this->emit('loadingStart');
 
         if ($this->scannedNumberingCode) {
-            $numberingData = Numbering::where("kode", $this->scannedNumberingCode)->first();
+            $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->scannedNumberingCode)->first();
         }
 
         if ($type == "rft") {
@@ -222,7 +222,7 @@ class ProductionPanelTemporary extends Component
         $success = 0;
         $fail = 0;
 
-        $temporaryOutputs = TemporaryOutput::where("line_id", Auth::user()->line_id)->
+        $temporaryOutputs = DB::connection('mysql_sb')->table('temporary_output_packing')->where("line_id", Auth::user()->line_id)->
             whereRaw('(DATE(temporary_output_packing.created_at) = "'.$this->orderDate.'" OR DATE(temporary_output_packing.updated_at) = "'.$this->orderDate.'")')->
             get();
 
@@ -230,7 +230,7 @@ class ProductionPanelTemporary extends Component
             $endlineOutputData = true;
             $thisOrderWsDetailSize = $this->orderWsDetailSizes->where('so_det_id', $tmpOutput->so_det_id)->first();
             \Log::info($thisOrderWsDetailSize);
-            if (!(Rft::where('kode_numbering', $tmpOutput->kode_numbering)->count() > 0 || Defect::where('kode_numbering', $tmpOutput->kode_numbering)->count() > 0 || Reject::where('kode_numbering', $tmpOutput->kode_numbering)->count() > 0) && ($thisOrderWsDetailSize) && ($endlineOutputData)) {
+            if (((DB::connection('mysql_sb')->table('output_rfts_packing')->where('kode_numbering', $tmpOutput->kode_numbering)->count() + DB::connection('mysql_sb')->table('output_defects_packing')->where('kode_numbering', $tmpOutput->kode_numbering)->count() + DB::connection('mysql_sb')->table('output_rejects_packing')->where('kode_numbering', $tmpOutput->kode_numbering)->count()) < 1) && ($thisOrderWsDetailSize) && ($endlineOutputData)) {
                 array_push($temporaryOutputIds, $tmpOutput->id);
 
                 switch ($tmpOutput->tipe_output) {
@@ -344,22 +344,22 @@ class ProductionPanelTemporary extends Component
         // Keep this data with session
         $this->orderWsDetailSizes = $session->get("orderWsDetailSizes", $this->orderWsDetailSizes);
 
-        $this->outputRft = TemporaryOutput::
+        $this->outputRft = DB::connection('mysql_sb')->table('temporary_output_packing')->
             where('temporary_output_packing.line_id', Auth::user()->line_id)->
             whereRaw('(DATE(temporary_output_packing.created_at) = "'.$this->orderDate.'" OR DATE(temporary_output_packing.updated_at) = "'.$this->orderDate.'")')->
             where('tipe_output', 'rft')->
             count();
-        $this->outputDefect = TemporaryOutput::
+        $this->outputDefect = DB::connection('mysql_sb')->table('temporary_output_packing')->
             where('temporary_output_packing.line_id', Auth::user()->line_id)->
             whereRaw('(DATE(temporary_output_packing.created_at) = "'.$this->orderDate.'" OR DATE(temporary_output_packing.updated_at) = "'.$this->orderDate.'")')->
             where('tipe_output', 'defect')->
             count();
-        $this->outputReject = TemporaryOutput::
+        $this->outputReject = DB::connection('mysql_sb')->table('temporary_output_packing')->
             where('temporary_output_packing.line_id', Auth::user()->line_id)->
             whereRaw('(DATE(temporary_output_packing.created_at) = "'.$this->orderDate.'" OR DATE(temporary_output_packing.updated_at) = "'.$this->orderDate.'")')->
             where('tipe_output', 'reject')->
             count();
-        $this->outputRework = TemporaryOutput::
+        $this->outputRework = DB::connection('mysql_sb')->table('temporary_output_packing')->
             where('temporary_output_packing.line_id', Auth::user()->line_id)->
             whereRaw('(DATE(temporary_output_packing.created_at) = "'.$this->orderDate.'" OR DATE(temporary_output_packing.updated_at) = "'.$this->orderDate.'")')->
             where('tipe_output', 'rework')->

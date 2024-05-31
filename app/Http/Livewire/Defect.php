@@ -129,12 +129,12 @@ class Defect extends Component
 
     public function updateOutput()
     {
-        $this->output = DefectModel::
+        $this->output = DB::connection('mysql_sb')->table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'defect')->
             count();
 
-        $this->defect = DefectModel::
+        $this->defect = DB::connection('mysql_sb')->table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'defect')->
             whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->
@@ -219,7 +219,7 @@ class Defect extends Component
 
     public function selectDefectAreaPosition()
     {
-        $masterPlan = MasterPlan::select('gambar')->find($this->orderInfo->id);
+        $masterPlan = DB::connection('mysql_sb')->table('master_plan')->select('gambar')->find($this->orderInfo->id);
 
         if ($masterPlan) {
             $this->emit('showSelectDefectArea', $masterPlan->gambar);
@@ -237,7 +237,7 @@ class Defect extends Component
     public function preSubmitInput()
     {
         if ($this->numberingInput) {
-            $numberingData = Numbering::where("kode", $this->numberingInput)->first();
+            $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->numberingInput)->first();
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
@@ -266,7 +266,7 @@ class Defect extends Component
 
             $validation->validate();
         } else {
-            $endlineOutputData = EndlineOutput::where("kode_numbering", $this->numberingInput)->first();
+            $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
 
             if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
                 $this->emit('clearSelectDefectAreaPoint');
@@ -350,23 +350,12 @@ class Defect extends Component
         }
 
         if (!$exist) {
-            $this->rapidDefectCount += 1;
-
             if ($numberingInput) {
-                $numberingData = Numbering::where("kode", $numberingInput)->first();
+                $this->rapidDefectCount += 1;
 
-                if ($numberingData) {
-                    $sizeInput = $numberingData->so_det_id;
-                    $sizeInputText = $numberingData->size;
-                    $noCutInput = $numberingData->no_cut_size;
-
-                    array_push($this->rapidDefect, [
-                        'numberingInput' => $numberingInput,
-                        'sizeInput' => $sizeInput,
-                        'sizeInputText' => $sizeInputText,
-                        'noCutInput' => $noCutInput,
-                    ]);
-                }
+                array_push($this->rapidDefect, [
+                    'numberingInput' => $numberingInput,
+                ]);
             }
         }
     }
@@ -390,13 +379,15 @@ class Defect extends Component
         if ($this->rapidDefect && count($this->rapidDefect) > 0) {
 
             for ($i = 0; $i < count($this->rapidDefect); $i++) {
-                $endlineOutputCount = EndLineOutput::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count();
+                $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->rapidDefect[$i]['numberingInput'])->first();
 
-                if (($endlineOutputCount > 0) && !(DefectModel::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Rft::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('so_det_id', $this->rapidDefect[$i]['sizeInput'])->count() > 0)) {
+                $endlineOutputCount = DB::connection('mysql_sb')->table('output_rfts')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count();
+
+                if (($endlineOutputCount > 0) && ((DB::connection('mysql_sb')->table('output_defects_packing')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rfts_packing')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rejects_packing')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count()) < 1) && ($this->orderWsDetailSizes->where('so_det_id', $numberingData->so_det_id)->count() > 0)) {
                     array_push($rapidDefectFiltered, [
                         'master_plan_id' => $this->orderInfo->id,
-                        'so_det_id' => $this->rapidDefect[$i]['sizeInput'],
-                        'no_cut_size' => $this->rapidDefect[$i]['noCutInput'],
+                        'so_det_id' => $numberingData->so_det_id,
+                        'no_cut_size' => $numberingData->no_cut_size,
                         'kode_numbering' => $this->rapidDefect[$i]['numberingInput'],
                         'defect_type_id' => $this->defectType,
                         'defect_area_id' => $this->defectArea,
@@ -434,7 +425,7 @@ class Defect extends Component
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
 
         // Get total output
-        $this->output = DefectModel::
+        $this->output =DB::connection('mysql_sb')->table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'defect')->
             count();
@@ -449,7 +440,7 @@ class Defect extends Component
         $this->defectAreas = DefectArea::orderBy('defect_area')->get();
 
         // Defect
-        $this->defect = DefectModel::
+        $this->defect = DB::connection('mysql_sb')->table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'defect')->
             whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->

@@ -109,12 +109,12 @@ class Rework extends Component
 
     public function updateOutput()
     {
-        $this->output = Defect::
+        $this->output = DB::connection('mysql_sb')->table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'reworked')->
             count();
 
-        $this->rework = Defect::
+        $this->rework = DB::connection('mysql_sb')->table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'reworked')->
             whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->
@@ -183,7 +183,7 @@ class Rework extends Component
     }
 
     public function submitAllRework() {
-        $allDefect = Defect::selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_reworks_packing.kode_numbering kode_numbering, output_defects_packing.so_det_id so_det_id')->
+        $allDefect = DB::connection('mysql_sb')->table('output_defects_packing')->selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_reworks_packing.kode_numbering kode_numbering, output_defects_packing.so_det_id so_det_id')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->get();
@@ -316,7 +316,7 @@ class Rework extends Component
     }
 
     public function submitRework($defectId) {
-        $thisDefectRework = ReworkModel::where('defect_id', $defectId)->count();
+        $thisDefectRework = DB::connection('mysql_sb')->table('output_reworks_packing')->where('defect_id', $defectId)->count();
 
         if ($thisDefectRework < 1) {
             // add to rework
@@ -326,18 +326,16 @@ class Rework extends Component
             ]);
 
             // remove from defect
-            $defect = Defect::where('id', $defectId);
-            $getDefect = $defect->first();
-            $updateDefect = $defect->update([
-                "defect_status" => "reworked"
-            ]);
+            $defect = Defect::where('id', $defectId)->first();
+            $defect->defect_status = "reworked";
+            $defect->save();
 
             // add to rft
             $createRft = Rft::create([
-                'master_plan_id' => $getDefect->master_plan_id,
-                'no_cut_size' => $getDefect->no_cut_size,
-                'kode_numbering' => $getDefect->kode_numbering,
-                'so_det_id' => $getDefect->so_det_id,
+                'master_plan_id' => $defect->master_plan_id,
+                'no_cut_size' => $defect->no_cut_size,
+                'kode_numbering' => $defect->kode_numbering,
+                'so_det_id' => $defect->so_det_id,
                 "status" => "REWORK",
                 "rework_id" => $createRework->id
             ]);
@@ -345,10 +343,10 @@ class Rework extends Component
             // add to rft nds
             $createRftNds = OutputPacking::create([
                 'sewing_line' => $this->orderInfo->sewing_line,
-                'master_plan_id' => $getDefect->master_plan_id,
-                'no_cut_size' => $getDefect->no_cut_size,
-                'kode_numbering' => $getDefect->kode_numbering,
-                'so_det_id' => $getDefect->so_det_id,
+                'master_plan_id' => $defect->master_plan_id,
+                'no_cut_size' => $defect->no_cut_size,
+                'kode_numbering' => $defect->kode_numbering,
+                'so_det_id' => $defect->so_det_id,
                 "status" => "REWORK",
                 "rework_id" => $createRework->id
             ]);
@@ -368,11 +366,9 @@ class Rework extends Component
         $deleteRework = ReworkModel::where('id', $reworkId)->delete();
 
         // add to defect
-        $defect = Defect::where('id', $defectId);
-        $getDefect = $defect->first();
-        $updateDefect = $defect->update([
-            "defect_status" => "defect"
-        ]);
+        $defect = Defect::where('id', $defectId)->first();
+        $defect->defect_status = 'defect';
+        $defect->save();
 
         // delete from rft
         $deleteRft = Rft::where('rework_id', $reworkId)->delete();
@@ -392,7 +388,7 @@ class Rework extends Component
         $this->emit('renderQrScanner', 'rework');
 
         if ($this->numberingInput) {
-            $numberingData = Numbering::where("kode", $this->numberingInput)->first();
+            $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->numberingInput)->first();
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
@@ -413,16 +409,15 @@ class Rework extends Component
             ]);
 
             // remove from defect
-            $defect = Defect::where('id', $scannedDefectData->id)->first();
-            $defect->defect_status = "reworked";
-            $defect->save();
+            $scannedDefectData->defect_status = "reworked";
+            $scannedDefectData->save();
 
             // add to rft
             $createRft = Rft::create([
-                'master_plan_id' => $defect->master_plan_id,
-                'no_cut_size' => $defect->no_cut_size,
-                'kode_numbering' => $defect->kode_numbering,
-                'so_det_id' => $defect->so_det_id,
+                'master_plan_id' => $scannedDefectData->master_plan_id,
+                'no_cut_size' => $scannedDefectData->no_cut_size,
+                'kode_numbering' => $scannedDefectData->kode_numbering,
+                'so_det_id' => $scannedDefectData->so_det_id,
                 'status' => 'REWORK',
                 'rework_id' => $createRework->id
             ]);
@@ -430,10 +425,10 @@ class Rework extends Component
             // add to rft nds
             $createRftNds = OutputPacking::create([
                 'sewing_line' => $this->orderInfo->sewing_line,
-                'master_plan_id' => $defect->master_plan_id,
-                'no_cut_size' => $defect->no_cut_size,
-                'kode_numbering' => $defect->kode_numbering,
-                'so_det_id' => $defect->so_det_id,
+                'master_plan_id' => $scannedDefectData->master_plan_id,
+                'no_cut_size' => $scannedDefectData->no_cut_size,
+                'kode_numbering' => $scannedDefectData->kode_numbering,
+                'so_det_id' => $scannedDefectData->so_det_id,
                 'status' => 'REWORK',
                 'rework_id' => $createRework->id
             ]);
@@ -474,20 +469,9 @@ class Rework extends Component
             $this->rapidReworkCount += 1;
 
             if ($numberingInput) {
-                $numberingData = Numbering::where("kode", $numberingInput)->first();
-
-                if ($numberingData) {
-                    $sizeInput = $numberingData->so_det_id;
-                    $sizeInputText = $numberingData->size;
-                    $noCutInput = $numberingData->no_cut_size;
-
-                    array_push($this->rapidRework, [
-                        'numberingInput' => $numberingInput,
-                        'sizeInput' => $sizeInput,
-                        'sizeInputText' => $sizeInputText,
-                        'noCutInput' => $noCutInput,
-                    ]);
-                }
+                array_push($this->rapidRework, [
+                    'numberingInput' => $numberingInput,
+                ]);
             }
         }
     }
@@ -501,9 +485,9 @@ class Rework extends Component
 
         if ($this->rapidRework && count($this->rapidRework) > 0) {
             for ($i = 0; $i < count($this->rapidRework); $i++) {
-                $scannedDefectData = Defect::where("defect_status", "defect")->where("kode_numbering", $this->rapidRework[$i]['numberingInput'])->first();
+                $scannedDefectData = DB::connection('mysql_sb')->table('output_defects_packing')->where("defect_status", "defect")->where("kode_numbering", $this->rapidRework[$i]['numberingInput'])->first();
 
-                if (($scannedDefectData) && ($this->orderWsDetailSizes->where('so_det_id', $this->rapidRework[$i]['sizeInput'])->count() > 0)) {
+                if (($scannedDefectData) && ($this->orderWsDetailSizes->where('so_det_id', $scannedDefectData->so_det_id)->count() > 0)) {
                     $createRework = ReworkModel::create([
                         'defect_id' => $scannedDefectData->id,
                         'status' => 'NORMAL'
@@ -563,11 +547,11 @@ class Rework extends Component
 
         $this->allDefectImage = MasterPlan::select('gambar')->find($this->orderInfo->id);
 
-        $this->allDefectPosition = Defect::where('output_defects_packing.defect_status', 'defect')->
+        $this->allDefectPosition = DB::connection('mysql_sb')->table('output_defects_packing')->where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->
             get();
 
-        $allDefectList = Defect::selectRaw('output_defects_packing.defect_type_id, output_defects_packing.defect_area_id, output_defect_types.defect_type, output_defect_areas.defect_area, count(*) as total')->
+        $allDefectList =DB::connection('mysql_sb')->table('output_defects_packing')->selectRaw('output_defects_packing.defect_type_id, output_defects_packing.defect_area_id, output_defect_types.defect_type, output_defect_areas.defect_area, count(*) as total')->
             leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects_packing.defect_area_id')->
             leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects_packing.defect_type_id')->
             where('output_defects_packing.defect_status', 'defect')->
@@ -614,7 +598,7 @@ class Rework extends Component
             )")->
             orderBy('output_reworks_packing.updated_at', 'desc')->paginate(10, ['*'], 'reworksPage');
 
-        $this->massSelectedDefect = Defect::selectRaw('output_defects_packing.so_det_id, so_det.size as size, count(*) as total')->
+        $this->massSelectedDefect = DB::connection('mysql_sb')->table('output_defects_packing')->selectRaw('output_defects_packing.so_det_id, so_det.size as size, count(*) as total')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->
@@ -622,12 +606,12 @@ class Rework extends Component
             where('output_defects_packing.defect_area_id', $this->massDefectArea)->
             groupBy('output_defects_packing.so_det_id', 'so_det.size')->get();
 
-        $this->output = Defect::
+        $this->output = DB::connection('mysql_sb')->table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'reworked')->
             count();
 
-        $this->rework = Defect::
+        $this->rework = DB::connection('mysql_sb')->table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'reworked')->
             whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->

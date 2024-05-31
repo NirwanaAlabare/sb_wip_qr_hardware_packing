@@ -84,12 +84,12 @@ class Reject extends Component
     public function updateOutput()
     {
         // Get total output
-        $this->output = RejectModel::
+        $this->output = DB::connection('mysql_sb')->table('output_rejects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             count();
 
         // Reject
-        $this->reject = RejectModel::
+        $this->reject = DB::connection('mysql_sb')->table('output_rejects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->
             get();
@@ -107,7 +107,7 @@ class Reject extends Component
         $this->emit('qrInputFocus', 'reject');
 
         if ($this->numberingInput) {
-            $numberingData = Numbering::where("kode", $this->numberingInput)->first();
+            $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->numberingInput)->first();
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
@@ -118,7 +118,7 @@ class Reject extends Component
 
         $validatedData = $this->validate();
 
-        $endlineOutputData = EndlineOutput::where("kode_numbering", $this->numberingInput)->first();
+        $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
 
         if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
             $insertReject = RejectModel::create([
@@ -168,20 +168,9 @@ class Reject extends Component
             $this->rapidRejectCount += 1;
 
             if ($numberingInput) {
-                $numberingData = Numbering::where("kode", $numberingInput)->first();
-
-                if ($numberingData) {
-                    $sizeInput = $numberingData->so_det_id;
-                    $sizeInputText = $numberingData->size;
-                    $noCutInput = $numberingData->no_cut_size;
-
-                    array_push($this->rapidReject, [
-                        'numberingInput' => $numberingInput,
-                        'sizeInput' => $sizeInput,
-                        'sizeInputText' => $sizeInputText,
-                        'noCutInput' => $noCutInput,
-                    ]);
-                }
+                array_push($this->rapidReject, [
+                    'numberingInput' => $numberingInput,
+                ]);
             }
         }
     }
@@ -194,13 +183,15 @@ class Reject extends Component
         if ($this->rapidReject && count($this->rapidReject) > 0) {
 
             for ($i = 0; $i < count($this->rapidReject); $i++) {
-                $endlineOutputCount = EndlineOutput::where("kode_numbering", $this->rapidReject[$i]['numberingInput'])->count();
+                $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->rapidReject[$i]['numberingInput'])->first();
 
-                if (($endlineOutputCount > 0) && !(RejectModel::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0 || Rft::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0 || Defect::where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() > 0) && ($this->orderWsDetailSizes->where('so_det_id', $this->rapidReject[$i]['sizeInput'])->count() > 0)) {
+                $endlineOutputCount = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->rapidReject[$i]['numberingInput'])->count();
+
+                if (($endlineOutputCount > 0) && ((DB::connection('mysql_sb')->table('output_rejects_packing')->where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rfts_packing')->where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_defects_packing')->where('kode_numbering', $this->rapidReject[$i]['numberingInput'])->count()) < 1) && ($this->orderWsDetailSizes->where('so_det_id', $numberingData->so_det_id)->count() > 0)) {
                     array_push($rapidRejectFiltered, [
                         'master_plan_id' => $this->orderInfo->id,
-                        'so_det_id' => $this->rapidReject[$i]['sizeInput'],
-                        'no_cut_size' => $this->rapidReject[$i]['noCutInput'],
+                        'so_det_id' => $numberingData->so_det_id,
+                        'no_cut_size' => $numberingData->no_cut_size,
                         'kode_numbering' => $this->rapidReject[$i]['numberingInput'],
                         'status' => 'NORMAL',
                         'created_at' => Carbon::now(),
@@ -229,12 +220,12 @@ class Reject extends Component
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
 
         // Get total output
-        $this->output = RejectModel::
+        $this->output = DB::connection('mysql_sb')->table('output_rejects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             count();
 
         // Reject
-        $this->reject = RejectModel::
+        $this->reject = DB::connection('mysql_sb')->table('output_rejects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->
             get();

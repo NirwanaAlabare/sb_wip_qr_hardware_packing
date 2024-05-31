@@ -31,7 +31,7 @@ class RftTemporary extends Component
     protected $rules = [
         'sizeInput' => 'required',
         'noCutInput' => 'required',
-        'numberingInput' => 'required|unique:output_rfts,kode_numbering|unique:output_defects,kode_numbering|unique:output_rejects,kode_numbering|unique:temporary_output_packing,kode_numbering',
+        'numberingInput' => 'required|unique:output_rfts_packing,kode_numbering|unique:output_defects_packing,kode_numbering|unique:output_rejects_packing,kode_numbering|unique:temporary_output_packing,kode_numbering',
     ];
 
     protected $messages = [
@@ -98,7 +98,7 @@ class RftTemporary extends Component
         $this->emit('qrInputFocus', 'rft');
 
         if ($this->numberingInput) {
-            $numberingData = Numbering::where("kode", $this->numberingInput)->first();
+            $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->numberingInput)->first();
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
@@ -109,7 +109,7 @@ class RftTemporary extends Component
 
         $validatedData = $this->validate();
 
-        $endlineOutputData = EndlineOutput::where("kode_numbering", $this->numberingInput)->first();
+        $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
         $thisOrderWsDetailSize = $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->first();
         if ($endlineOutputData && $thisOrderWsDetailSize) {
             $insertRft = RftModel::create([
@@ -172,20 +172,9 @@ class RftTemporary extends Component
             $this->rapidRftCount += 1;
 
             if ($numberingInput) {
-                $numberingData = Numbering::where("kode", $numberingInput)->first();
-
-                if ($numberingData) {
-                    $sizeInput = $numberingData->so_det_id;
-                    $sizeInputText = $numberingData->size;
-                    $noCutInput = $numberingData->no_cut_size;
-
-                    array_push($this->rapidRft, [
-                        'numberingInput' => $numberingInput,
-                        'sizeInput' => $sizeInput,
-                        'sizeInputText' => $sizeInputText,
-                        'noCutInput' => $noCutInput,
-                    ]);
-                }
+                array_push($this->rapidRft, [
+                    'numberingInput' => $numberingInput,
+                ]);
             }
         }
     }
@@ -199,13 +188,14 @@ class RftTemporary extends Component
 
         if ($this->rapidRft && count($this->rapidRft) > 0) {
             for ($i = 0; $i < count($this->rapidRft); $i++) {
-                $endlineOutputData = EndlineOutput::where("kode_numbering", $this->rapidRft[$i]['numberingInput'])->first();
-                $thisOrderWsDetailSize = $this->orderWsDetailSizes->where('so_det_id', $this->rapidRft[$i]['sizeInput'])->first();
-                if (!(RftModel::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Defect::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0) && ($thisOrderWsDetailSize) && ($endlineOutputData)) {
+                $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->rapidRft[$i]['numberingInput'])->first();
+                $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->rapidRft[$i]['numberingInput'])->first();
+                $thisOrderWsDetailSize = $this->orderWsDetailSizes->where('so_det_id', $numberingData->so_det_id)->first();
+                if (((DB::connection('mysql_sb')->table('output_rfts_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_defects')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rejects_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count()) < 1) && ($thisOrderWsDetailSize) && ($endlineOutputData)) {
                     array_push($rapidRftFiltered, [
                         'master_plan_id' => $thisOrderWsDetailSize['master_plan_id'],
-                        'so_det_id' => $this->rapidRft[$i]['sizeInput'],
-                        'no_cut_size' => $this->rapidRft[$i]['noCutInput'],
+                        'so_det_id' => $numberingData->so_det_id,
+                        'no_cut_size' => $numberingData->no_cut_size,
                         'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
                         'status' => 'NORMAL',
                         'created_at' => Carbon::now(),
@@ -214,12 +204,12 @@ class RftTemporary extends Component
 
                     $success += 1;
                 } else {
-                    if (!(RftModel::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Defect::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || TemporaryOutput::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0)) {
+                    if (((DB::connection('mysql_sb')->table('output_rfts_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_defects_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rejects_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('temporary_output_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count()) < 1)) {
                         array_push($rapidTemporaryFiltered, [
                             'line_id' => Auth::user()->line_id,
-                            'so_det_id' => $this->rapidRft[$i]['sizeInput'],
-                            'no_cut_size' => $this->rapidRft[$i]['noCutInput'],
-                            'size' => $this->rapidRft[$i]['sizeInputText'],
+                            'so_det_id' => $numberingData->so_det_id,
+                            'no_cut_size' => $numberingData->no_cut_size,
+                            'size' => $numberingData->size,
                             'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
                             'tipe_output' => 'rft',
                             'created_at' => Carbon::now(),
@@ -255,7 +245,7 @@ class RftTemporary extends Component
     {
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
 
-        $this->rft = TemporaryOutput::
+        $this->rft = DB::connection('mysql_sb')->table('temporary_output_packing')->
             where('temporary_output_packing.line_id', Auth::user()->line_id)->
             whereRaw('(DATE(temporary_output_packing.created_at) = "'.$this->orderDate.'" OR DATE(temporary_output_packing.updated_at) = "'.$this->orderDate.'")')->
             where('tipe_output', 'rft')->

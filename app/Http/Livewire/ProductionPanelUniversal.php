@@ -185,7 +185,7 @@ class ProductionPanelUniversal extends Component
         $this->emit('loadingStart');
 
         if ($this->scannedNumberingCode) {
-            $numberingData = Numbering::where("kode", $this->scannedNumberingCode)->first();
+            $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->scannedNumberingCode)->first();
         }
 
         if ($type == "rft") {
@@ -214,24 +214,24 @@ class ProductionPanelUniversal extends Component
         // Keep this data with session
         $this->orderWsDetailSizes = $session->get("orderWsDetailSizes", $this->orderWsDetailSizes);
 
-        $this->outputRft = Rft::
+        $this->outputRft = DB::connection('mysql_sb')->table('output_rfts_packing')->
             leftJoin('master_plan', 'master_plan.id', '=', 'output_rfts_packing.master_plan_id')->
             where('master_plan.sewing_line', Auth::user()->username)->
             where('master_plan.tgl_plan', $this->orderDate)->
             where('status', 'NORMAL')->
             count();
-        $this->outputDefect = Defect::
+        $this->outputDefect = DB::connection('mysql_sb')->table('output_defects_packing')->
             leftJoin('master_plan', 'master_plan.id', '=', 'output_defects_packing.master_plan_id')->
             where('master_plan.sewing_line', Auth::user()->username)->
             where('master_plan.tgl_plan', $this->orderDate)->
             where('defect_status', 'defect')->
             count();
-        $this->outputReject = Reject::
+        $this->outputReject = DB::connection('mysql_sb')->table('output_rejects_packing')->
             leftJoin('master_plan', 'master_plan.id', '=', 'output_rejects_packing.master_plan_id')->
             where('master_plan.sewing_line', Auth::user()->username)->
             where('master_plan.tgl_plan', $this->orderDate)->
             count();
-        $this->outputRework = Defect::
+        $this->outputRework = DB::connection('mysql_sb')->table('output_defects_packing')->
             leftJoin('master_plan', 'master_plan.id', '=', 'output_defects_packing.master_plan_id')->
             where('master_plan.sewing_line', Auth::user()->username)->
             where('master_plan.tgl_plan', $this->orderDate)->

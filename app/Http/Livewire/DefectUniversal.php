@@ -349,7 +349,7 @@ class DefectUniversal extends Component
             $this->rapidDefectCount += 1;
 
             if ($numberingInput) {
-                $numberingData = Numbering::where("kode", $numberingInput)->first();
+                $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $numberingInput)->first();
 
                 if ($numberingData) {
                     $sizeInput = $numberingData->so_det_id;
@@ -389,9 +389,9 @@ class DefectUniversal extends Component
 
         if ($this->rapidDefect && count($this->rapidDefect) > 0) {
             for ($i = 0; $i < count($this->rapidDefect); $i++) {
-                $endlineOutputCount = EndLineOutput::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count();
+                $endlineOutputCount = DB::connection('mysql_sb')->table('output_rfts')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count();
                 $thisOrderWsDetailSize = $this->orderWsDetailSizes->where('so_det_id', $this->rapidDefect[$i]['sizeInput'])->first();
-                if (($endlineOutputCount > 0) && !(DefectModel::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Rft::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() > 0) && ($thisOrderWsDetailSize)) {
+                if (($endlineOutputCount > 0) && ((DB::connection('mysql_sb')->table('output_defects_packing')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rfts_packing')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rejects_packing')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count()) < 1) && ($thisOrderWsDetailSize)) {
                     array_push($rapidDefectFiltered, [
                         'master_plan_id' => $thisOrderWsDetailSize["master_plan_id"],
                         'so_det_id' => $this->rapidDefect[$i]['sizeInput'],
@@ -437,7 +437,7 @@ class DefectUniversal extends Component
         $this->defectAreas = DefectArea::orderBy('defect_area')->get();
 
         // Defect
-        $this->defect = DefectModel::
+        $this->defect = DB::connection('mysql_sb')->table('output_defects_packing')->
             leftJoin('master_plan', 'master_plan.id', '=', 'output_defects_packing.master_plan_id')->
             where('master_plan.sewing_line', Auth::user()->username)->
             where('master_plan.tgl_plan', $this->orderDate)->

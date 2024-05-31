@@ -97,7 +97,7 @@ class RftUniversal extends Component
         $this->emit('qrInputFocus', 'rft');
 
         if ($this->numberingInput) {
-            $numberingData = Numbering::where("kode", $this->numberingInput)->first();
+            $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->numberingInput)->first();
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
@@ -108,7 +108,7 @@ class RftUniversal extends Component
 
         $validatedData = $this->validate();
 
-        $endlineOutputData = EndlineOutput::where("kode_numbering", $this->numberingInput)->first();
+        $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
         $thisOrderWsDetailSize = $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->first();
         if ($endlineOutputData && $thisOrderWsDetailSize) {
             $insertRft = RftModel::create([
@@ -149,7 +149,7 @@ class RftUniversal extends Component
             $this->rapidRftCount += 1;
 
             if ($numberingInput) {
-                $numberingData = Numbering::where("kode", $numberingInput)->first();
+                $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $numberingInput)->first();
 
                 if ($numberingData) {
                     $sizeInput = $numberingData->so_det_id;
@@ -174,9 +174,9 @@ class RftUniversal extends Component
 
         if ($this->rapidRft && count($this->rapidRft) > 0) {
             for ($i = 0; $i < count($this->rapidRft); $i++) {
-                $endlineOutputCount = EndlineOutput::where("kode_numbering", $this->numberingInput)->count();
+                $endlineOutputCount = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->count();
                 $thisOrderWsDetailSize = $this->orderWsDetailSizes->where('so_det_id', $this->rapidRft[$i]['sizeInput'])->first();
-                if (($endlineOutputCount > 0) && !(RftModel::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Defect::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0 || Reject::where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() > 0) && ($thisOrderWsDetailSize)) {
+                if (($endlineOutputCount > 0) && ((DB::connection('mysql_sb')->table('output_rfts_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_defects_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rejects_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count()) < 1) && ($thisOrderWsDetailSize)) {
                     array_push($rapidRftFiltered, [
                         'master_plan_id' => $thisOrderWsDetailSize['master_plan_id'],
                         'so_det_id' => $this->rapidRft[$i]['sizeInput'],
@@ -213,7 +213,7 @@ class RftUniversal extends Component
     {
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
 
-        $this->rft = RftModel::
+        $this->rft = DB::connection('mysql_sb')->table('output_rfts_packing')->
             leftJoin('master_plan', 'master_plan.id', '=', 'output_rfts_packing.master_plan_id')->
             where('master_plan.sewing_line', Auth::user()->username)->
             where('master_plan.tgl_plan', $this->orderDate)->
