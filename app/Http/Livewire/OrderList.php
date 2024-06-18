@@ -73,6 +73,15 @@ class OrderList extends Component
 
     public function render()
     {
+        $masterPlanBefore = MasterPlan::select("id")->where("sewing_line", strtoupper(Auth::user()->username))->where("master_plan.cancel", "N")->where("tgl_plan", "<", $this->date)->orderBy("tgl_plan", "desc")->limit(3)->get();
+
+        $additionalQuery = "";
+        if ($masterPlanBefore) {
+            $masterPlanBeforeIds = implode("' , '", $masterPlanBefore->pluck("id")->toArray());
+
+            $additionalQuery = "OR master_plan.id IN ('".$masterPlanBeforeIds."')";
+        }
+
         $orderSql = DB::table('master_plan')
             ->selectRaw("
                 MIN(master_plan.id) as id,
@@ -96,6 +105,7 @@ class OrderList extends Component
                 DB::raw("
                     (
                         select
+                            master_plan.tgl_plan,
                             master_plan.id_ws,
                             master_plan.sewing_line,
                             count(output_rfts_packing.id) as progress
@@ -104,15 +114,16 @@ class OrderList extends Component
                         left join
                             output_rfts_packing on output_rfts_packing.master_plan_id = master_plan.id
                         where
-                            ".(Auth::user()->Groupp == 'SEWING' ? "master_plan.sewing_line = '".strtoupper(Auth::user()->username)."' AND" : "")."
-                            master_plan.tgl_plan = '".$this->date."' AND
+                            ".(Auth::user()->Groupp != 'ALLSEWING' ? "master_plan.sewing_line = '".strtoupper(Auth::user()->username)."' AND" : "")."
                             master_plan.cancel = 'N'
                         group by
+                            master_plan.tgl_plan,
                             master_plan.id_ws,
                             master_plan.sewing_line
                     ) output"
                 ),
                 function ($join) {
+                    $join->on("output.tgl_plan", "=", "master_plan.tgl_plan");
                     $join->on("output.id_ws", "=", "master_plan.id_ws");
                     $join->on("output.sewing_line", "=", "master_plan.sewing_line");
                 }
@@ -121,6 +132,7 @@ class OrderList extends Component
                 DB::raw("
                     (
                         select
+                            master_plan.tgl_plan,
                             master_plan.id_ws,
                             master_plan.sewing_line,
                             count(output_rfts.id) as progress
@@ -129,26 +141,27 @@ class OrderList extends Component
                         left join
                             output_rfts on output_rfts.master_plan_id = master_plan.id
                         where
-                            ".(Auth::user()->Groupp == 'SEWING' ? "master_plan.sewing_line = '".strtoupper(Auth::user()->username)."' AND" : "")."
-                            master_plan.tgl_plan = '".$this->date."' AND
+                            ".(Auth::user()->Groupp != 'ALLSEWING' ? "master_plan.sewing_line = '".strtoupper(Auth::user()->username)."' AND" : "")."
                             master_plan.cancel = 'N'
                         group by
+                            master_plan.tgl_plan,
                             master_plan.id_ws,
                             master_plan.sewing_line
                     ) output_endline"
                 ),
                 function ($join) {
+                    $join->on("output_endline.tgl_plan", "=", "master_plan.tgl_plan");
                     $join->on("output_endline.id_ws", "=", "master_plan.id_ws");
                     $join->on("output_endline.sewing_line", "=", "master_plan.sewing_line");
                 }
             );
-        if (Auth::user()->Groupp == 'SEWING') {
+        if (Auth::user()->Groupp != 'ALLSEWING') {
             $orderSql->where('master_plan.sewing_line', strtoupper(Auth::user()->username));
         }
         $this->orders = $orderSql
             ->where('so_det.cancel', 'N')
             ->where('master_plan.cancel', 'N')
-            ->where('master_plan.tgl_plan', $this->date)
+            ->whereRaw('master_plan.tgl_plan = "'.$this->date.'"')
             ->whereRaw("
                 (
                     act_costing.kpno LIKE '%".$this->search."%'
@@ -174,6 +187,7 @@ class OrderList extends Component
                     AND
                     REPLACE(master_plan.sewing_line, '_', ' ') LIKE '%".$this->filterLine."%'
                 )
+                ".$additionalQuery."
             ")
             ->groupBy(
                 'master_plan.id_ws',
@@ -187,6 +201,7 @@ class OrderList extends Component
                 'output_endline.progress',
                 'so.id'
             )
+            ->orderBy('master_plan.tgl_plan', 'desc')
             ->orderBy('master_plan.sewing_line', 'asc')
             ->orderBy('mastersupplier.supplier', 'asc')
             ->orderBy('act_costing.kpno', 'asc')
