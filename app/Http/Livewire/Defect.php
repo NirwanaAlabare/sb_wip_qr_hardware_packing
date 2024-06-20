@@ -304,6 +304,7 @@ class Defect extends Component
                 'defect_area_x' => $this->defectAreaPositionX,
                 'defect_area_y' => $this->defectAreaPositionY,
                 'status' => 'NORMAL',
+                'created_by' => Auth::user()->username,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ]);
@@ -394,6 +395,7 @@ class Defect extends Component
                         'defect_area_x' => $this->defectAreaPositionX,
                         'defect_area_y' => $this->defectAreaPositionY,
                         'status' => 'NORMAL',
+                        'created_by' => Auth::user()->username,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);

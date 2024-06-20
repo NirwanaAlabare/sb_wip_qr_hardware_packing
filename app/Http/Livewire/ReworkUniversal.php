@@ -8,6 +8,7 @@ use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SignalBit\MasterPlan;
 use App\Models\Nds\Numbering;
+use App\Models\Nds\OutputPacking;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\Rework as ReworkModel;
@@ -288,7 +289,8 @@ class ReworkUniversal extends Component
             // add to rework
             $createRework = ReworkModel::create([
                 "defect_id" => $defectId,
-                "status" => "NORMAL"
+                "status" => "NORMAL",
+
             ]);
 
             // remove from defect
@@ -303,7 +305,8 @@ class ReworkUniversal extends Component
                 'kode_numbering' => $defect->kode_numbering,
                 'so_det_id' => $defect->so_det_id,
                 "status" => "REWORK",
-                "rework_id" => $createRework->id
+                "rework_id" => $createRework->id,
+                'created_by' => Auth::user()->username,
             ]);
 
             if ($createRework && $updateDefect && $createRft) {
@@ -357,6 +360,7 @@ class ReworkUniversal extends Component
             // add to rework
             $createRework = ReworkModel::create([
                 "defect_id" => $scannedDefectData->id,
+                "created_by" => Auth::user()->username,
                 "status" => "NORMAL"
             ]);
 
@@ -371,7 +375,20 @@ class ReworkUniversal extends Component
                 'kode_numbering' => $scannedDefectData->kode_numbering,
                 'so_det_id' => $scannedDefectData->so_det_id,
                 "status" => "REWORK",
+                "created_by" => Auth::user()->username,
                 "rework_id" => $createRework->id
+            ]);
+
+            // add to rft nds
+            $createRftNds = OutputPacking::create([
+                'sewing_line' => Auth::user()->username,
+                'master_plan_id' => $scannedDefectData->master_plan_id,
+                'no_cut_size' => $scannedDefectData->no_cut_size,
+                'kode_numbering' => $scannedDefectData->kode_numbering,
+                'so_det_id' => $scannedDefectData->so_det_id,
+                'status' => 'REWORK',
+                'rework_id' => $createRework->id,
+                'created_by' => Auth::user()->username
             ]);
 
             $this->sizeInput = '';
@@ -418,6 +435,7 @@ class ReworkUniversal extends Component
     public function submitRapidInput() {
         $defectIds = [];
         $rftData = [];
+        $rftDataNds = [];
         $success = 0;
         $fail = 0;
 
@@ -440,6 +458,20 @@ class ReworkUniversal extends Component
                         'kode_numbering' => $scannedDefectData->kode_numbering,
                         'rework_id' => $createRework->id,
                         'status' => 'REWORK',
+                        "created_by" => Auth::user()->username,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+
+                    array_push($rftDataNds, [
+                        'sewing_line' => $this->orderInfo->sewing_line,
+                        'master_plan_id' => $this->orderInfo->id,
+                        'so_det_id' => $scannedDefectData->so_det_id,
+                        'no_cut_size' => $scannedDefectData->no_cut_size,
+                        'kode_numbering' => $scannedDefectData->kode_numbering,
+                        'rework_id' => $createRework->id,
+                        'status' => 'REWORK',
+                        'created_by' => Auth::user()->username,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);
@@ -453,6 +485,7 @@ class ReworkUniversal extends Component
 
         $rapidDefectUpdate = Defect::whereIn('id', $defectIds)->update(["defect_status" => "reworked"]);
         $rapidRftInsert = Rft::insert($rftData);
+        $rapidRftInsertNds = OutputPacking::insert($rftDataNds);
 
         $this->emit('alert', 'success', $success." output berhasil terekam. ");
         $this->emit('alert', 'error', $fail." output gagal terekam.");

@@ -11,6 +11,7 @@ use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\EndlineOutput;
 use App\Models\SignalBit\TemporaryOutput;
 use App\Models\Nds\Numbering;
+use App\Models\Nds\OutputPacking;
 use Carbon\Carbon;
 use DB;
 
@@ -115,6 +116,7 @@ class RejectTemporary extends Component
                 'no_cut_size' => $this->noCutInput,
                 'kode_numbering' => $this->numberingInput,
                 'status' => 'NORMAL',
+                'created_by' => Auth::user()->username,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ]);
@@ -206,6 +208,7 @@ class RejectTemporary extends Component
                         'no_cut_size' => $numberingData->no_cut_size,
                         'kode_numbering' => $this->rapidReject[$i]['numberingInput'],
                         'status' => 'NORMAL',
+                        'created_by' => Auth::user()->username,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);

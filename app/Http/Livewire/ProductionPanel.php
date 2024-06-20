@@ -118,7 +118,7 @@ class ProductionPanel extends Component
         $this->undoDefectType = "";
         $this->undoDefectArea = "";
 
-        $orderWsDetailSizesSql = DB::table('master_plan')->selectRaw("
+        $this->orderWsDetailSizes = DB::table('master_plan')->selectRaw("
                 MIN(so_det.id) as so_det_id,
                 so_det.size as size,
                 so_det.dest as dest,
@@ -127,11 +127,8 @@ class ProductionPanel extends Component
             ->leftJoin('act_costing', 'act_costing.id', '=', 'master_plan.id_ws')
             ->leftJoin('so', 'so.id_cost', '=', 'act_costing.id')
             ->leftJoin('so_det', 'so_det.id_so', '=', 'so.id')
-            ->leftJoin('mastersupplier', 'mastersupplier.id_supplier', '=', 'act_costing.id_buyer');
-            if (Auth::user()->Groupp == "SEWING") {
-                $orderWsDetailSizesSql->where('master_plan.sewing_line', Auth::user()->username);
-            }
-        $this->orderWsDetailSizes = $orderWsDetailSizesSql
+            ->leftJoin('mastersupplier', 'mastersupplier.id_supplier', '=', 'act_costing.id_buyer')
+            ->where('master_plan.sewing_line', str_replace(" ", "_", $this->orderInfo->sewing_line))
             ->where('act_costing.kpno', $this->orderInfo->ws_number)
             ->where('so_det.color', $this->selectedColorName)
             ->where('master_plan.cancel', 'N')
@@ -380,7 +377,7 @@ class ProductionPanel extends Component
             ->where('master_plan.id', $this->selectedColor)
             ->first();
 
-        $orderWsDetailsSql = MasterPlan::selectRaw("
+        $this->orderWsDetails = MasterPlan::selectRaw("
                 master_plan.id as id,
                 master_plan.tgl_plan as tgl_plan,
                 master_plan.color as color,
@@ -395,11 +392,8 @@ class ProductionPanel extends Component
             ->leftJoin('master_size_new', 'master_size_new.size', '=', 'so_det.size')
             ->leftJoin('masterproduct', 'masterproduct.id', '=', 'act_costing.id_product')
             ->where('so_det.cancel', '!=', 'Y')
-            ->where('master_plan.cancel', '!=', 'Y');
-            if (Auth::user()->Groupp == "SEWING") {
-                $orderWsDetailsSql->where('master_plan.sewing_line', Auth::user()->username);
-            }
-        $this->orderWsDetails = $orderWsDetailsSql
+            ->where('master_plan.cancel', '!=', 'Y')
+            ->where('master_plan.sewing_line', str_replace(" ", "_", $this->orderInfo->sewing_line))
             ->where('act_costing.kpno', $this->orderInfo->ws_number)
             ->where('master_plan.tgl_plan', $this->orderInfo->tgl_plan)
             ->groupBy(
@@ -411,7 +405,7 @@ class ProductionPanel extends Component
                 'mastersupplier.supplier'
             )->get();
 
-        $orderWsDetailSizesSql = DB::table('master_plan')->selectRaw("
+        $this->orderWsDetailSizes = DB::table('master_plan')->selectRaw("
                 MIN(so_det.id) as so_det_id,
                 so_det.size as size,
                 so_det.dest as dest,
@@ -420,11 +414,9 @@ class ProductionPanel extends Component
             ->leftJoin('act_costing', 'act_costing.id', '=', 'master_plan.id_ws')
             ->leftJoin('so', 'so.id_cost', '=', 'act_costing.id')
             ->leftJoin('so_det', 'so_det.id_so', '=', 'so.id')
-            ->leftJoin('mastersupplier', 'mastersupplier.id_supplier', '=', 'act_costing.id_buyer');
-            if (Auth::user()->Groupp == "SEWING") {
-                $orderWsDetailSizesSql->where('master_plan.sewing_line', Auth::user()->username);
-            }
-        $this->orderWsDetailSizes = $orderWsDetailSizesSql->where('act_costing.kpno', $this->orderInfo->ws_number)
+            ->leftJoin('mastersupplier', 'mastersupplier.id_supplier', '=', 'act_costing.id_buyer')
+            ->where('master_plan.sewing_line', str_replace(" ", "_", $this->orderInfo->sewing_line))
+            ->where('act_costing.kpno', $this->orderInfo->ws_number)
             ->where('so_det.color', $this->selectedColorName)
             ->groupBy('so_det.id', 'so_det.dest', 'so_det.size', 'so_det.color')
             ->orderBy('so_det_id')

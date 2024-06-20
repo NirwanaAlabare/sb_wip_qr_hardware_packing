@@ -207,7 +207,7 @@ class Rework extends Component
                     'so_det_id' => $defect->so_det_id,
                     'status' => "REWORK",
                     'rework_id' => $createRework->id,
-                    'created_by' => Auth::user()->id,
+                    'created_by' => Auth::user()->username,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now()
                 ]);
@@ -221,7 +221,7 @@ class Rework extends Component
                     'so_det_id' => $defect->so_det_id,
                     'status' => "REWORK",
                     'rework_id' => $createRework->id,
-                    'created_by' => Auth::user()->id,
+                    'created_by' => Auth::user()->username,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now()
                 ]);
@@ -288,7 +288,8 @@ class Rework extends Component
                     'kode_numbering' => $defect->kode_numbering,
                     'so_det_id' => $defect->so_det_id,
                     'status' => 'REWORK',
-                    'rework_id' => $createRework->id
+                    'rework_id' => $createRework->id,
+                    'created_by' => Auth::user()->username,
                 ]);
 
                 // create rft nds
@@ -299,7 +300,8 @@ class Rework extends Component
                     'kode_numbering' => $defect->kode_numbering,
                     'so_det_id' => $defect->so_det_id,
                     'status' => 'REWORK',
-                    'rework_id' => $createRework->id
+                    'rework_id' => $createRework->id,
+                    'created_by' => Auth::user()->username,
                 ]);
             }
 
@@ -337,7 +339,8 @@ class Rework extends Component
                 'kode_numbering' => $defect->kode_numbering,
                 'so_det_id' => $defect->so_det_id,
                 "status" => "REWORK",
-                "rework_id" => $createRework->id
+                "rework_id" => $createRework->id,
+                'created_by' => Auth::user()->username,
             ]);
 
             // add to rft nds
@@ -348,7 +351,8 @@ class Rework extends Component
                 'kode_numbering' => $defect->kode_numbering,
                 'so_det_id' => $defect->so_det_id,
                 "status" => "REWORK",
-                "rework_id" => $createRework->id
+                "rework_id" => $createRework->id,
+                'created_by' => Auth::user()->username,
             ]);
 
             if ($createRework && $updateDefect && $createRft) {
@@ -419,7 +423,8 @@ class Rework extends Component
                 'kode_numbering' => $scannedDefectData->kode_numbering,
                 'so_det_id' => $scannedDefectData->so_det_id,
                 'status' => 'REWORK',
-                'rework_id' => $createRework->id
+                'rework_id' => $createRework->id,
+                'created_by' => Auth::user()->username
             ]);
 
             // add to rft nds
@@ -430,7 +435,8 @@ class Rework extends Component
                 'kode_numbering' => $scannedDefectData->kode_numbering,
                 'so_det_id' => $scannedDefectData->so_det_id,
                 'status' => 'REWORK',
-                'rework_id' => $createRework->id
+                'rework_id' => $createRework->id,
+                'created_by' => Auth::user()->username
             ]);
 
             $this->sizeInput = '';
@@ -490,7 +496,8 @@ class Rework extends Component
                 if (($scannedDefectData) && ($this->orderWsDetailSizes->where('so_det_id', $scannedDefectData->so_det_id)->count() > 0)) {
                     $createRework = ReworkModel::create([
                         'defect_id' => $scannedDefectData->id,
-                        'status' => 'NORMAL'
+                        'status' => 'NORMAL',
+                        'created_by' => Auth::user()->username,
                     ]);
 
                     array_push($defectIds, $scannedDefectData->id);
@@ -502,6 +509,7 @@ class Rework extends Component
                         'kode_numbering' => $scannedDefectData->kode_numbering,
                         'rework_id' => $createRework->id,
                         'status' => 'REWORK',
+                        'created_by' => Auth::user()->username,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);
@@ -514,6 +522,7 @@ class Rework extends Component
                         'kode_numbering' => $scannedDefectData->kode_numbering,
                         'rework_id' => $createRework->id,
                         'status' => 'REWORK',
+                        'created_by' => Auth::user()->username,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);

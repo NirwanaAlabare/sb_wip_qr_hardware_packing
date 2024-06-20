@@ -117,6 +117,19 @@ class RftUniversal extends Component
                 'no_cut_size' => $this->noCutInput,
                 'kode_numbering' => $this->numberingInput,
                 'status' => 'NORMAL',
+                'created_by' => Auth::user()->username,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ]);
+
+            $insertRftNds = OutputPacking::create([
+                'sewing_line' => Auth::user()->username,
+                'master_plan_id' => $thisOrderWsDetailSize['master_plan_id'],
+                'so_det_id' => $this->sizeInput,
+                'no_cut_size' => $this->noCutInput,
+                'kode_numbering' => $this->numberingInput,
+                'status' => 'NORMAL',
+                'created_by' => Auth::user()->username,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ]);
@@ -169,6 +182,7 @@ class RftUniversal extends Component
 
     public function submitRapidInput() {
         $rapidRftFiltered = [];
+        $rapidRftFilteredNds = [];
         $success = 0;
         $fail = 0;
 
@@ -183,6 +197,19 @@ class RftUniversal extends Component
                         'no_cut_size' => $this->rapidRft[$i]['noCutInput'],
                         'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
                         'status' => 'NORMAL',
+                        'created_by' => Auth::user()->username,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+
+                    array_push($rapidRftFilteredNds, [
+                        'sewing_line' => Auth::user()->username,
+                        'master_plan_id' => $thisOrderWsDetailSize['master_plan_id'],
+                        'so_det_id' => $numberingData->so_det_id,
+                        'no_cut_size' => $numberingData->no_cut_size,
+                        'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
+                        'status' => 'NORMAL',
+                        'created_by' => Auth::user()->username,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);
@@ -195,6 +222,7 @@ class RftUniversal extends Component
         }
 
         $rapidRftInsert = RftModel::insert($rapidRftFiltered);
+        $rapidRftInsertNds = OutputPacking::insert($rapidRftFilteredNds);
 
         $this->emit('alert', 'success', $success." output berhasil terekam. ");
         $this->emit('alert', 'error', $fail." output gagal terekam.");

@@ -19,6 +19,7 @@ class ProductionController extends Controller
         $orderInfo = MasterPlan::selectRaw("
                 master_plan.id as id,
                 master_plan.tgl_plan as tgl_plan,
+                REPLACE(master_plan.sewing_line, '_', ' ') as sewing_line,
                 act_costing.kpno as ws_number,
                 act_costing.styleno as style_name,
                 mastersupplier.supplier as buyer_name,
@@ -38,7 +39,7 @@ class ProductionController extends Controller
             ->where('master_plan.id', $id)
             ->first();
 
-        $orderWsDetailsSql = MasterPlan::selectRaw("
+        $orderWsDetails = MasterPlan::selectRaw("
                 master_plan.id as id,
                 master_plan.tgl_plan as tgl_plan,
                 master_plan.color as color,
@@ -53,11 +54,9 @@ class ProductionController extends Controller
             ->leftJoin('master_size_new', 'master_size_new.size', '=', 'so_det.size')
             ->leftJoin('masterproduct', 'masterproduct.id', '=', 'act_costing.id_product')
             ->where('so_det.cancel', '!=', 'Y')
-            ->where('master_plan.cancel', '!=', 'Y');
-            if (Auth::user()->Groupp == "SEWING") {
-                $orderWsDetailsSql->where('master_plan.sewing_line', Auth::user()->username);
-            }
-        $orderWsDetails = $orderWsDetailsSql->where('act_costing.kpno', $orderInfo->ws_number)
+            ->where('master_plan.cancel', '!=', 'Y')
+            ->where('master_plan.sewing_line', str_replace(" ", "_", $orderInfo->sewing_line))
+            ->where('act_costing.kpno', $orderInfo->ws_number)
             ->where('master_plan.tgl_plan', $orderInfo->tgl_plan)
             ->groupBy(
                 'master_plan.id',

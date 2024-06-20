@@ -11,6 +11,7 @@ use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\EndlineOutput;
 use App\Models\Nds\Numbering;
+use App\Models\Nds\OutputPacking;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use DB;
@@ -118,6 +119,7 @@ class RftTemporary extends Component
                 'no_cut_size' => $this->noCutInput,
                 'kode_numbering' => $this->numberingInput,
                 'status' => 'NORMAL',
+                'created_by' => Auth::user()->username,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ]);
@@ -198,6 +200,7 @@ class RftTemporary extends Component
                         'no_cut_size' => $numberingData->no_cut_size,
                         'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
                         'status' => 'NORMAL',
+                        'created_by' => Auth::user()->username,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);
