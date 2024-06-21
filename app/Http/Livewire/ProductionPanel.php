@@ -357,6 +357,7 @@ class ProductionPanel extends Component
         $this->orderInfo = MasterPlan::selectRaw("
                 master_plan.id as id,
                 master_plan.tgl_plan as tgl_plan,
+                REPLACE(master_plan.sewing_line, '_', ' ') as sewing_line,
                 act_costing.kpno as ws_number,
                 act_costing.styleno as style_name,
                 mastersupplier.supplier as buyer_name,
