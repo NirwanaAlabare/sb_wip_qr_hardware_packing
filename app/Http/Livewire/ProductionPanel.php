@@ -12,6 +12,7 @@ use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\Rework;
 use App\Models\SignalBit\Undo;
 use App\Models\Nds\Numbering;
+use App\Models\Nds\OutputPacking;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -207,6 +208,15 @@ class ProductionPanel extends Component
                 // Undo RFT
                 $rftSql = Rft::where('master_plan_id', $this->orderInfo->id)->
                     where('so_det_id', $this->undoSize)->
+                    where('created_by', Auth::user()->username)->
+                    where('status', 'NORMAL')->
+                    orderBy('updated_at', 'DESC')->
+                    orderBy('created_at', 'DESC')->
+                    take($this->undoQty);
+
+                $rftNdsSql = OutputPacking::where('master_plan_id', $this->orderInfo->id)->
+                    where('so_det_id', $this->undoSize)->
+                    where('created_by', Auth::user()->username)->
                     where('status', 'NORMAL')->
                     orderBy('updated_at', 'DESC')->
                     orderBy('created_at', 'DESC')->
@@ -224,6 +234,7 @@ class ProductionPanel extends Component
                 }
 
                 $deleteRft = $rftSql->delete();
+                $deleteRftNds = $rftNdsSql->delete();
 
                 if ($deleteRft)  {
                     $this->emit('alert', 'success', 'Output RFT dengan ukuran '.$size[0]->size.' berhasil di UNDO sebanyak '.$deleteRft.' kali.');

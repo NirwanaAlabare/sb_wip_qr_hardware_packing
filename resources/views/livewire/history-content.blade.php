@@ -15,9 +15,9 @@
                 <div class="loading"></div>
             </div>
         </div>
-        <div class="loading-container hidden" id="loading-history">
+        {{-- <div class="loading-container hidden" id="loading-history">
             <div class="loading mx-auto"></div>
-        </div>
+        </div> --}}
         <div class="row" id="content-history" wire:loading.remove wire:target="dateFrom, dateTo">
             <div class="col-md-6 table-responsive">
                 <p class="text-rft fw-bold mb-1"> RFT </p>

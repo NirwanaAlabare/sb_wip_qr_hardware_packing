@@ -15,9 +15,9 @@
                 <div class="loading"></div>
             </div>
         </div>
-        <div class="loading-container hidden" id="loading-undo">
+        {{-- <div class="loading-container hidden" id="loading-undo">
             <div class="loading mx-auto"></div>
-        </div>
+        </div> --}}
         <div class="row" id="content-undo" wire:loading.remove wire:target="dateFrom, dateTo">
             {{-- <div class="col-md-12 table-responsive">
                 <table class="table table-bordered w-100 mx-auto">
