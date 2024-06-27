@@ -318,6 +318,8 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             restrictYesterdayMasterPlan();
+
+            @this.updateOrder();
         });
 
         window.addEventListener("focus", () => {
