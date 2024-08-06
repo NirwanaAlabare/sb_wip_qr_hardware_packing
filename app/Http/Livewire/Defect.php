@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Session\SessionManager;
 use App\Models\SignalBit\MasterPlan;
 use App\Models\SignalBit\ProductType;
@@ -237,7 +238,11 @@ class Defect extends Component
     public function preSubmitInput()
     {
         if ($this->numberingInput) {
-            $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->numberingInput)->first();
+            if (str_contains($this->numberingInput, 'WIP')) {
+                $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->numberingInput)->first();
+            } else {
+                $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->numberingInput)->first();
+            }
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
@@ -380,7 +385,11 @@ class Defect extends Component
         if ($this->rapidDefect && count($this->rapidDefect) > 0) {
 
             for ($i = 0; $i < count($this->rapidDefect); $i++) {
-                $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->rapidDefect[$i]['numberingInput'])->first();
+                if (str_contains($this->rapidDefect[$i]['numberingInput'], 'WIP')) {
+                    $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->rapidDefect[$i]['numberingInput'])->first();
+                } else {
+                    $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->rapidDefect[$i]['numberingInput'])->first();
+                }
 
                 $endlineOutputCount = DB::connection('mysql_sb')->table('output_rfts')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count();
 

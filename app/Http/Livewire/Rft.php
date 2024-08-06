@@ -111,7 +111,11 @@ class Rft extends Component
         $this->emit('qrInputFocus', 'rft');
 
         if ($this->numberingInput) {
-            $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->numberingInput)->first();
+            if (str_contains($this->numberingInput, 'WIP')) {
+                $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->numberingInput)->first();
+            } else {
+                $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->numberingInput)->first();
+            }
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
@@ -192,7 +196,11 @@ class Rft extends Component
         if ($this->rapidRft && count($this->rapidRft) > 0) {
 
             for ($i = 0; $i < count($this->rapidRft); $i++) {
-                $numberingData = DB::connection('mysql_nds')->table('stocker_numbering')->where("kode", $this->rapidRft[$i]['numberingInput'])->first();
+                if (str_contains($this->rapidRft[$i]['numberingInput'], 'WIP')) {
+                    $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->rapidRft[$i]['numberingInput'])->first();
+                } else {
+                    $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->rapidRft[$i]['numberingInput'])->first();
+                }
 
                 $endlineOutputCount = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->rapidRft[$i]['numberingInput'])->count();
 
