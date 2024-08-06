@@ -9,6 +9,7 @@ use App\Models\SignalBit\Reject as RejectModel;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Defect;
 use App\Models\Nds\Numbering;
+use App\Models\Nds\OutputPacking;
 use App\Models\SignalBit\EndLineOutput;
 use Carbon\Carbon;
 use DB;

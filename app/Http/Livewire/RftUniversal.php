@@ -9,6 +9,7 @@ use App\Models\SignalBit\Rework;
 use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\Reject;
 use App\Models\Nds\Numbering;
+use App\Models\Nds\OutputPacking;
 use App\Models\SignalBit\EndLineOutput;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
