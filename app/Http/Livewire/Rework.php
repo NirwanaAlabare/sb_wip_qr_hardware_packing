@@ -183,7 +183,7 @@ class Rework extends Component
     }
 
     public function submitAllRework() {
-        $allDefect = DB::connection('mysql_sb')->table('output_defects_packing')->selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_reworks_packing.kode_numbering kode_numbering, output_defects_packing.so_det_id so_det_id')->
+        $allDefect = DB::connection('mysql_sb')->table('output_defects_packing')->selectRaw('output_defects.id id, output_defects.master_plan_id master_plan_id, output_defects.kode_numbering, output_defects.no_cut_size, output_defects.so_det_id so_det_id')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->get();
@@ -355,7 +355,7 @@ class Rework extends Component
                 'created_by' => Auth::user()->username,
             ]);
 
-            if ($createRework && $updateDefect && $createRft) {
+            if ($createRework && $createRft) {
                 $this->emit('alert', 'success', "DEFECT dengan ID : ".$defectId." berhasil di REWORK.");
             } else {
                 $this->emit('alert', 'error', "Terjadi kesalahan. DEFECT dengan ID : ".$defectId." tidak berhasil di REWORK.");
