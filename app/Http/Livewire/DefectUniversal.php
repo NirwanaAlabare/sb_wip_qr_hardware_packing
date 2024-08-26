@@ -229,7 +229,14 @@ class DefectUniversal extends Component
             if (str_contains($this->numberingInput, 'WIP')) {
                 $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->numberingInput)->first();
             } else {
-                $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->numberingInput)->first();
+                $numberingCodes = explode('_', $this->numberingInput);
+
+                if (count($numberingCodes) > 2) {
+                    $this->numberingInput = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
+                    $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $this->numberingInput)->first();
+                } else {
+                    $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->numberingInput)->first();
+                }
             }
 
             if ($numberingData) {
@@ -340,7 +347,18 @@ class DefectUniversal extends Component
             if (($numberingInput && $item['numberingInput'] == $numberingInput)) {
                 $exist = true;
             } else {
-                $numberingData = Numbering::where("kode", $numberingInput)->first();
+                if (str_contains($numberingInput, 'WIP')) {
+                    $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $numberingInput)->first();
+                } else {
+                    $numberingCodes = explode('_', $numberingInput);
+
+                    if (count($numberingCodes) > 2) {
+                        $numberingInput = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
+                        $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $numberingInput)->first();
+                    } else {
+                        $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $numberingInput)->first();
+                    }
+                }
 
                 if ($numberingData) {
                     if ($item['masterPlanId'] != $this->orderWsDetailSizes->where("so_det_id", $numberingData->so_det_id)->first()['master_plan_id']) {
@@ -357,7 +375,14 @@ class DefectUniversal extends Component
                 if (str_contains($numberingInput, 'WIP')) {
                     $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $numberingInput)->first();
                 } else {
-                    $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $numberingInput)->first();
+                    $numberingCodes = explode('_', $numberingInput);
+
+                    if (count($numberingCodes) > 2) {
+                        $numberingInput = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
+                        $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $numberingInput)->first();
+                    } else {
+                        $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $numberingInput)->first();
+                    }
                 }
 
                 if ($numberingData) {

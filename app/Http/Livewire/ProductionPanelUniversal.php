@@ -184,9 +184,14 @@ class ProductionPanelUniversal extends Component
     public function setAndSubmitInput($type) {
         $this->emit('loadingStart');
 
-        if ($this->scannedNumberingCode) {
-            if (str_contains($this->scannedNumberingCode, 'WIP')) {
-                $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->scannedNumberingCode)->first();
+        if (str_contains($this->scannedNumberingCode, 'WIP')) {
+            $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->scannedNumberingCode)->first();
+        } else {
+            $numberingCodes = explode('_', $this->scannedNumberingCode);
+
+            if (count($numberingCodes) > 2) {
+                $this->scannedNumberingCode = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
+                $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $this->scannedNumberingCode)->first();
             } else {
                 $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->scannedNumberingCode)->first();
             }
