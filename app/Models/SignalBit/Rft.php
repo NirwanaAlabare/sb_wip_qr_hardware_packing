@@ -23,6 +23,7 @@ class Rft extends Model
         'rework_id',
         'created_at',
         'updated_at',
+        'created_by',
     ];
 
     public function masterPlan()
