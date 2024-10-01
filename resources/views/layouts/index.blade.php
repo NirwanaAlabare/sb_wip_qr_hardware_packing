@@ -31,6 +31,15 @@
     <audio controls id="alert-sound" class="d-none">
         <source src="{{ asset('audio/r2d2.mp3') }}" type="audio/mpeg">
     </audio>
+    <audio controls id="success-sound" class="d-none">
+        <source src="{{ asset('audio/success.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio controls id="warning-sound" class="d-none">
+        <source src="{{ asset('audio/warning.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio controls id="error-sound" class="d-none">
+        <source src="{{ asset('audio/error.mp3') }}" type="audio/mpeg">
+    </audio>
 
     <main role="main" class="main flex-shrink-0 container-fluid mt-3">
         @yield('content')

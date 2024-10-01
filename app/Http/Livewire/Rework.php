@@ -560,6 +560,12 @@ class Rework extends Component
 
     public function render(SessionManager $session)
     {
+        if (isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Kode qr sudah discan.")) {
+            $this->emit('alert', 'warning', "QR sudah discan.");
+        } else if ((isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Harap scan qr.")) || (isset($this->errorBag->messages()['sizeInput']) && collect($this->errorBag->messages()['sizeInput'])->contains("Harap scan qr."))) {
+            $this->emit('alert', 'error', "Harap scan QR.");
+        }
+
         $this->emit('loadReworkPageJs');
 
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);

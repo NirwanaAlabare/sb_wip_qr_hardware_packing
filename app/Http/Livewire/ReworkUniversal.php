@@ -340,6 +340,12 @@ class ReworkUniversal extends Component
 
     public function submitInput()
     {
+        if (isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Kode qr sudah discan.")) {
+            $this->emit('alert', 'warning', "QR sudah discan.");
+        } else if ((isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Harap scan qr.")) || (isset($this->errorBag->messages()['sizeInput']) && collect($this->errorBag->messages()['sizeInput'])->contains("Harap scan qr."))) {
+            $this->emit('alert', 'error', "Harap scan QR.");
+        }
+
         $this->emit('renderQrScanner', 'rework');
 
         if ($this->numberingInput) {
