@@ -131,7 +131,8 @@ class Rft extends Component
 
                 $validatedData = $this->validate();
 
-                $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
+                // $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
+                $endlineOutputData = true;
 
                 if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
                     $insertRft = RftModel::create([
