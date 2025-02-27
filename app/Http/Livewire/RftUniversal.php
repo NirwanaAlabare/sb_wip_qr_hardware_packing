@@ -120,7 +120,9 @@ class RftUniversal extends Component
 
         $validatedData = $this->validate();
 
-        $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
+        // $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
+        $endlineOutputData = true;
+        
         $thisOrderWsDetailSize = $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->first();
         if ($endlineOutputData && $thisOrderWsDetailSize) {
             $insertRft = RftModel::create([

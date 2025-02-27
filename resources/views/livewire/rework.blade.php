@@ -190,9 +190,9 @@
                             @foreach ($defects as $defect)
                                 <tr>
                                     <td>{{ $defects->firstItem() + $loop->index }}</td>
-                                    <td>{{ $defect->id }}</td>
+                                    <td>{{ $defect->kode_numbering }}</td>
                                     <td>{{ $defect->so_det_size }}</td>
-                                    <td>{{ $defect->defect_type}}</td>
+                                    <td>{{ $defect->defect_type }}</td>
                                     <td>{{ $defect->defect_area }}</td>
                                     <td>
                                         <button type="button" class="btn btn-dark" wire:click="showDefectAreaImage('{{$defect->masterPlan->gambar}}', {{$defect->defect_area_x}}, {{$defect->defect_area_y}})'">
@@ -254,7 +254,7 @@
                             @foreach ($reworks as $rework)
                                 <tr>
                                     <td>{{ $reworks->firstItem() + $loop->index }}</td>
-                                    <td>{{ $rework->defect->id }}</td>
+                                    <td>{{ $rework->defect->kode_numbering }}</td>
                                     <td>{{ $rework->so_det_size }}</td>
                                     <td>{{ $rework->defect->defect_type}}</td>
                                     <td>{{ $rework->defect->defect_area }}</td>
