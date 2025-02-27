@@ -1,18 +1,29 @@
+/* MyCustom Styles */
+@font-face {
+    font-family: Nunito;
+    src: url(../fonts/Nunito/Nunito-VariableFont_wght.ttf);
+}
+
+@font-face {
+    font-family: Roboto;
+    src: url(../fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf);
+}
+
 /* General */
 :root {
-    --sb-color: #6531a0;
-    --sb-secondary-color: #3985f7;
+    --sb-color: #082149;
+    --sb-secondary-color: #238380;
     --rft-color: #12be60;
     --rft-color-sec: #2e8a57;
     --defect-color: #ff971f;
     --defect-color-sec: #d88202;
     --reject-color: #fa4456;
     --reject-color-sec: #d33141;
-    --rework-color: #447efa;
-    --rework-color-sec: #3169e4;
+    --rework-color: rgb(44, 158, 252);
+    --rework-color-sec: #3161e4;
     --pale-color: #ebebeb;
     --light-color: #fbfbfb;
-    --dark-color: #212529;
+    --dark-color: #2b2f3a;
 }
 
 .hidden {
@@ -20,6 +31,7 @@
 }
 
 html, body {
+    font-family: 'Roboto', 'Nunito', sans-serif;
     margin: 0;
 }
 
