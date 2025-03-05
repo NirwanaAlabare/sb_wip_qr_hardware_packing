@@ -134,42 +134,46 @@ class Rft extends Component
                 $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
                 // $endlineOutputData = true;
 
-                if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
-                    $insertRft = RftModel::create([
-                        'master_plan_id' => $this->orderInfo->id,
-                        'so_det_id' => $this->sizeInput,
-                        'no_cut_size' => $this->noCutInput,
-                        'kode_numbering' => $this->numberingInput,
-                        'status' => 'NORMAL',
-                        'created_by' => Auth::user()->username,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
-                    ]);
+                if ($endlineOutputData) {
+                    if ($this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
+                        $insertRft = RftModel::create([
+                            'master_plan_id' => $this->orderInfo->id,
+                            'so_det_id' => $this->sizeInput,
+                            'no_cut_size' => $this->noCutInput,
+                            'kode_numbering' => $this->numberingInput,
+                            'status' => 'NORMAL',
+                            'created_by' => Auth::user()->username,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ]);
 
-                    $insertRftNds = OutputPacking::create([
-                        'sewing_line' => $this->orderInfo->sewing_line,
-                        'master_plan_id' => $this->orderInfo->id,
-                        'so_det_id' => $this->sizeInput,
-                        'no_cut_size' => $this->noCutInput,
-                        'kode_numbering' => $this->numberingInput,
-                        'status' => 'NORMAL',
-                        'created_by' => Auth::user()->username,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
-                    ]);
+                        $insertRftNds = OutputPacking::create([
+                            'sewing_line' => $this->orderInfo->sewing_line,
+                            'master_plan_id' => $this->orderInfo->id,
+                            'so_det_id' => $this->sizeInput,
+                            'no_cut_size' => $this->noCutInput,
+                            'kode_numbering' => $this->numberingInput,
+                            'status' => 'NORMAL',
+                            'created_by' => Auth::user()->username,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ]);
 
-                    if ($insertRft) {
-                        $this->emit('alert', 'success', "1 output berukuran ".$this->sizeInputText." berhasil terekam.");
+                        if ($insertRft) {
+                            $this->emit('alert', 'success', "1 output berukuran ".$this->sizeInputText." berhasil terekam.");
 
-                        $this->sizeInput = '';
-                        $this->sizeInputText = '';
-                        $this->noCutInput = '';
-                        $this->numberingInput = '';
+                            $this->sizeInput = '';
+                            $this->sizeInputText = '';
+                            $this->noCutInput = '';
+                            $this->numberingInput = '';
+                        } else {
+                            $this->emit('alert', 'error', "Terjadi kesalahan. Output tidak berhasil direkam.");
+                        }
                     } else {
-                        $this->emit('alert', 'error', "Terjadi kesalahan. Output tidak berhasil direkam.");
+                        $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
                     }
                 } else {
-                    $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
+                    $this->emit('alert', 'error', "Output tidak ditemukan dari QC.");
                 }
             } else {
                 $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
