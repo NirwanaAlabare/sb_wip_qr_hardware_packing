@@ -75,9 +75,12 @@
                                         <p class="text-center fs-3 mt-auto mb-auto">{{ $outputFiltered }}</p>
                                     </div>
                                 </div>
-                                <button type="button" class="reset multi-item lower btn btn-pale h-50" wire:click="preSubmitUndo('rft')">
-                                    <i class="fa-regular fa-rotate-left fa-2xl"></i>
+                                <button type="button" class="reset multi-item lower btn btn-pale h-50">
+                                    <i class="fa-regular fa-rotate-left fa-2xl invisible"></i>
                                 </button>
+                                {{-- <button type="button" class="reset multi-item lower btn btn-pale h-50" wire:click="preSubmitUndo('rft')">
+                                    <i class="fa-regular fa-rotate-left fa-2xl"></i>
+                                </button> --}}
                             </div>
                         </div>
                     </div>
@@ -99,12 +102,15 @@
                                         <p class="mb-0"><i class="fa-regular fa-clock-rotate-left fa-xl"></i></p>
                                     </div>
                                 </button>
-                                <button type="button" class="reset multi-item lower btn btn-pale h-50" wire:click="preSubmitUndo('defect')">
+                                <button type="button" class="reset multi-item lower btn btn-pale h-50">
+                                    <i class="fa-regular fa-rotate-left fa-2xl invisible"></i>
+                                </button>
+                                {{-- <button type="button" class="reset multi-item lower btn btn-pale h-50" wire:click="preSubmitUndo('defect')">
                                     <div class="d-flex flex-column justify-content-center align-items-center w-100 h-100">
                                         <p class="mb-1">UNDO</p>
                                         <p class="mb-0"><i class="fa-regular fa-rotate-left fa-xl"></i></p>
                                     </div>
-                                </button>
+                                </button> --}}
                             </div>
                         </div>
                     </div>
@@ -119,9 +125,12 @@
                             <p class="text-light fs-1">{{ $outputReject }}</p>
                         </div>
                         <div class="card-custom-footer bg-light w-25 h-100">
-                            <button class="reset single-item btn btn-pale w-100 h-100" wire:click="preSubmitUndo('reject')">
-                                <i class="fa-regular fa-rotate-left fa-2xl"></i>
+                            <button type="button" class="reset single-item btn btn-pale w-100 h-100">
+                                <i class="fa-regular fa-rotate-left fa-2xl invisible"></i>
                             </button>
+                            {{-- <button class="reset single-item btn btn-pale w-100 h-100" wire:click="preSubmitUndo('reject')">
+                                <i class="fa-regular fa-rotate-left fa-2xl"></i>
+                            </button> --}}
                         </div>
                     </div>
                 </div>
@@ -135,9 +144,12 @@
                             <p class="text-light fs-1">{{ $outputRework }}</p>
                         </div>
                         <div class="card-custom-footer bg-light w-25 h-100">
-                            <button class="reset single-item btn btn-pale w-100 h-100" wire:click="preSubmitUndo('rework')">
-                                <i class="fa-regular fa-rotate-left fa-2xl"></i>
+                            <button type="button" class="reset single-item btn btn-pale w-100 h-100">
+                                <i class="fa-regular fa-rotate-left fa-2xl invisible"></i>
                             </button>
+                            {{-- <button class="reset single-item btn btn-pale w-100 h-100" wire:click="preSubmitUndo('rework')">
+                                <i class="fa-regular fa-rotate-left fa-2xl"></i>
+                            </button> --}}
                         </div>
                     </div>
                 </div>
@@ -258,7 +270,7 @@
     <div class="modal" tabindex="-1" id="select-output-type-modal" wire:ignore.self>
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-sb text-light">
+                <div class="modal-header bg-sb-secondary text-light">
                     <h5 class="modal-title">PILIH TIPE OUTPUT</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="hideOutputTypeModal()"></button>
                 </div>
@@ -308,7 +320,7 @@
 
     @if (!$panels)
         {{-- Back --}}
-        <a wire:click="toProductionPanel" class="back bg-success text-light text-center w-auto" id="back-button">
+        <a wire:click="toProductionPanel" class="back bg-sb-secondary text-light text-center w-auto" id="back-button">
             <i class="fa-regular fa-reply"></i>
         </a>
     @endif
@@ -317,12 +329,6 @@
 @push('scripts')
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            restrictYesterdayMasterPlan();
-
-            @this.updateOrder();
-        });
-
-        window.addEventListener("focus", () => {
             restrictYesterdayMasterPlan();
         });
 
@@ -351,6 +357,8 @@
                     showConfirmButton: true,
                     confirmButtonText: 'Oke',
                     confirmButtonColor: '#6531a0'
+                }).then((result) => {
+                    // window.location.href = '{{ route('index') }}';
                 });
             }
         }
@@ -364,7 +372,7 @@
                 if (textInput && textInput.length === 1) {
                     scannedQrCode = scannedQrCode+textInput;
 
-                    if (scannedQrCode.length >= 9) {
+                    if (scannedQrCode.length > 3) {
                         let i = 0;
                         let j = 1;
                         let k = 2;

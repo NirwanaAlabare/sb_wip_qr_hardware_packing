@@ -23,14 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // show date
 function showDate() {
-    if (document.getElementById("tanggal")) {
-        if (document.getElementById("tanggal").value == "" || document.getElementById("tanggal").value == null) {
-            let date = new Date();
+    if (document.getElementById("tanggal") && (document.getElementById("tanggal").value == "" || document.getElementById("tanggal").value == null)) {
+        let date = new Date();
 
-            let dateFormat = setDateFormat(date);
+        let dateFormat = setDateFormat(date);
 
-            document.getElementById("tanggal").value = dateFormat;
-        }
+        document.getElementById("tanggal").value = dateFormat;
     }
 }
 
@@ -131,7 +129,7 @@ function logout(url) {
         showConfirmButton: true,
         showDenyButton: true,
         confirmButtonText: 'Logout',
-        confirmButtonColor: '#2e8a57',
+        confirmButtonColor: '#6531a0',
         denyButtonText: 'Cancel',
       }).then((result) => {
         if (result.isConfirmed) {
@@ -175,18 +173,38 @@ function hideDefectModal(additional) {
     }
 }
 
+// reject modal
+function showRejectModal(additional) {
+    $("#reject-modal").modal("show");
+
+    if (additional == 'rapid') {
+        $("#rapid-submit-reject").removeClass("d-none");
+        $("#regular-submit-reject").addClass("d-none");
+    } else {
+        $("#rapid-submit-reject").addClass("d-none");
+        $("#regular-submit-reject").removeClass("d-none");
+    }
+}
+
+function hideRejectModal(additional) {
+    $("#reject-modal").modal("hide");
+
+    if (additional == 'rapid') {
+        $("#rapid-submit-reject").addClass("d-none");
+        $("#regular-submit-reject").removeClass("d-none");
+    } else {
+        $("#rapid-submit-reject").removeClass("d-none");
+        $("#regular-submit-reject").addClass("d-none");
+    }
+}
+
 $("#defect-modal").on("hidden.bs.modal", function (e) {
     $("#scannedDefectItem").focus();
 });
 
-// filter modal
-function showFilterModal() {
-    $("#filter-modal").modal("show");
-}
-
-function hideFilterModal() {
-    $("#filter-modal").modal("hide");
-}
+$("#reject-modal").on("hidden.bs.modal", function (e) {
+    $("#scannedRejectItem").focus();
+});
 
 // undo modal
 function showUndoModal() {
@@ -610,6 +628,34 @@ function hideSelectDefectArea() {
     selectDefectArea.style.alignItems = null;
 }
 
+// Select Reject Area
+function showSelectRejectArea(rejectAreaImage) {
+    document.body.style.maxHeight = '100%';
+    document.body.style.overflow = 'hidden';
+
+    let rejectAreaImageElement = document.getElementById('reject-area-img');
+    rejectAreaImageElement.src = 'http://10.10.5.62:8080/erp/pages/prod_new/upload_files/'+rejectAreaImage;
+
+    let selectRejectArea = document.getElementById('select-reject-area');
+    selectRejectArea.style.display = 'flex';
+    selectRejectArea.style.flexDirection = 'column';
+    selectRejectArea.style.alignItems = 'center';
+}
+
+function hideSelectRejectArea() {
+    document.body.style.maxHeight = null;
+    document.body.style.overflow = null;
+
+    let rejectAreaImageElement = document.getElementById('reject-area-img');
+    rejectAreaImageElement.src = '';
+
+    let selectRejectArea = document.getElementById('select-reject-area');
+    selectRejectArea.style.display = 'none';
+    selectRejectArea.style.flexDirection = null;
+    selectRejectArea.style.justifyContent = null;
+    selectRejectArea.style.alignItems = null;
+}
+
 // Show Defect Area Image
 function showDefectAreaImage(defectAreaImage) {
     document.body.style.maxHeight = '100%';
@@ -646,91 +692,91 @@ function clearOutputInputJs() {
 }
 
 // Reminder
-function showReminder(hoursminutes) {
-    if (!swal.isVisible()) {
-        Swal.fire({
-            icon: 'info',
-            title: 'Reminder',
-            html: 'Waktu saat ini : <b>'+hoursminutes+'</b><br class="mb-3">Harap sempatkan untuk menginput data di setiap jam jika memungkinkan<br class="mb-3"><small>Jika ada kendala dalam penggunaan aplikasi tolong di infokan</small>',
-            showConfirmButton: true,
-            showDenyButton: false,
-            confirmButtonText: 'Oke',
-            confirmButtonColor: '#2e8a57',
-        });
-    }
-}
+    // function showReminder(hoursminutes) {
+    //     if (!swal.isVisible()) {
+    //         Swal.fire({
+    //             icon: 'info',
+    //             title: 'Reminder',
+    //             html: 'Waktu saat ini : <b>'+hoursminutes+'</b><br class="mb-3">Harap sempatkan untuk menginput data di setiap jam jika memungkinkan<br class="mb-3"><small>Jika ada kendala dalam penggunaan aplikasi tolong di infokan</small>',
+    //             showConfirmButton: true,
+    //             showDenyButton: false,
+    //             confirmButtonText: 'Oke',
+    //             confirmButtonColor: '#6531a0',
+    //         });
+    //     }
+    // }
 
-if (document.getElementById("alert-sound")) {
-    var sound = document.getElementById("alert-sound");
-    var played = false;
+    // if (document.getElementById("alert-sound")) {
+    //     var sound = document.getElementById("alert-sound");
+    //     var played = false;
 
-    window.addEventListener('click', function(event) {
-        sound.pause();
-        sound.currentTime = 0;
-    });
+    //     window.addEventListener('click', function(event) {
+    //         sound.pause();
+    //         sound.currentTime = 0;
+    //     });
 
-    setInterval(function() {
-        let now = new Date();
-        let hours = String(now.getHours()).padStart(2, '0');
-        let minutes = String(now.getMinutes()).padStart(2, '0');
-        let seconds = now.getSeconds();
-        let hoursminutes = hours+':'+minutes;
+    //     setInterval(function() {
+    //         let now = new Date();
+    //         let hours = String(now.getHours()).padStart(2, '0');
+    //         let minutes = String(now.getMinutes()).padStart(2, '0');
+    //         let seconds = now.getSeconds();
+    //         let hoursminutes = hours+':'+minutes;
 
-        if (!played) {
-            switch (hoursminutes) {
-                case "07:53" :
-                    played = true;
-                    // sound.play();
-                    showReminder(hoursminutes);
-                    break;
-                case "08:53" :
-                    played = true;
-                    // sound.play();
-                    showReminder(hoursminutes);
-                    break;
-                case "09:53" :
-                    played = true;
-                    // sound.play();
-                    showReminder(hoursminutes);
-                    break;
-                case "10:53" :
-                    played = true;
-                    // sound.play();
-                    showReminder(hoursminutes);
-                    break;
-                case "11:53" :
-                    played = true;
-                    // sound.play();
-                    showReminder(hoursminutes);
-                    break;
-                case "13:53" :
-                    played = true;
-                    // sound.play();
-                    showReminder(hoursminutes);
-                    break;
-                case "14:53" :
-                    played = true;
-                    // sound.play();
-                    showReminder(hoursminutes);
-                    break;
-                case "15:51" :
-                    played = true;
-                    // sound.play();
-                    showReminder(hoursminutes);
-                    break;
-                case "16:53" :
-                    played = true;
-                    // sound.play();
-                    showReminder(hoursminutes);
-                    break;
-            }
-        }
+    //         if (!played) {
+    //             switch (hoursminutes) {
+    //                 case "07:53" :
+    //                     played = true;
+    //                     sound.play();
+    //                     showReminder(hoursminutes);
+    //                     break;
+    //                 case "08:53" :
+    //                     played = true;
+    //                     sound.play();
+    //                     showReminder(hoursminutes);
+    //                     break;
+    //                 case "09:53" :
+    //                     played = true;
+    //                     sound.play();
+    //                     showReminder(hoursminutes);
+    //                     break;
+    //                 case "10:53" :
+    //                     played = true;
+    //                     sound.play();
+    //                     showReminder(hoursminutes);
+    //                     break;
+    //                 case "11:53" :
+    //                     played = true;
+    //                     sound.play();
+    //                     showReminder(hoursminutes);
+    //                     break;
+    //                 case "13:53" :
+    //                     played = true;
+    //                     sound.play();
+    //                     showReminder(hoursminutes);
+    //                     break;
+    //                 case "14:53" :
+    //                     played = true;
+    //                     sound.play();
+    //                     showReminder(hoursminutes);
+    //                     break;
+    //                 case "15:51" :
+    //                     played = true;
+    //                     sound.play();
+    //                     showReminder(hoursminutes);
+    //                     break;
+    //                 case "16:53" :
+    //                     played = true;
+    //                     sound.play();
+    //                     showReminder(hoursminutes);
+    //                     break;
+    //             }
+    //         }
 
-        if (seconds == "0") {
-            played = false;
-        }
-    }, 1000);
-}
+    //         if (seconds == "0") {
+    //             played = false;
+    //         }
+    //     }, 1000);
+    // }
 
 var batteryModal = document.getElementById('battery') ? document.getElementById('battery') : null;
 
@@ -743,5 +789,6 @@ if (batteryModal) {
     batteryModal.addEventListener('hide.bs.modal', function (event) {
         console.log("closed");
         document.getElementById("battery-input").blur();
+        document.getElementById("battery-input").value = "";
     });
 }
