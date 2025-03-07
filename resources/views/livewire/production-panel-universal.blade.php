@@ -136,7 +136,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="hideOutputTypeModal()">Batal</button>
-                        {{-- <button type="button" class="btn btn-success" wire:click='submitDefectArea'>Tambahkan</button> --}}
+                        {{-- <button type="button" class="btn btn-sb-secondary" wire:click='submitDefectArea'>Tambahkan</button> --}}
                     </div>
                 </div>
             </div>

@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div class="d-flex">
-                <button class="btn btn-success rounded-0" id="defect-area-confirm">
+                <button class="btn btn-sb-secondary rounded-0" id="defect-area-confirm">
                     <i class="fa-regular fa-check"></i>
                 </button>
                 <button class="btn btn-danger rounded-0" id="defect-area-cancel">

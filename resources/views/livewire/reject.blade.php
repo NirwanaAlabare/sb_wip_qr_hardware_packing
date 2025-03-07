@@ -269,7 +269,7 @@
                                             </button>
                                         @endif
                                     </td>
-                                    <td class="text-reject fw-bold">{{ $reject->defect ? strtoupper($reject->defect->defect_status) : strtoupper($reject->reject_status) }}</td>
+                                    <td class="text-reject fw-bold">{{ $reject->defect ? "DEFECT" : "MATI" }}</td>
                                     <td>
                                         <div wire:loading>
                                             <div class="loading-small"></div>

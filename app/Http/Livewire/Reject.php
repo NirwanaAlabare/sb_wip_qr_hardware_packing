@@ -149,6 +149,7 @@ class Reject extends Component
     {
         // Get total output
         $this->output = RejectModel::
+            leftJoin("so_det", "so_det.id", "=", "output_rejects_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             count();
 
@@ -724,6 +725,7 @@ class Reject extends Component
 
         // Get total output
         $this->output = DB::connection('mysql_sb')->table('output_rejects_packing')->
+            leftJoin("so_det", "so_det.id", "=", "output_rejects_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             count();
 

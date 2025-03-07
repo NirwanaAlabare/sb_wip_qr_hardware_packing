@@ -90,14 +90,15 @@ class Rft extends Component
     public function updateOutput()
     {
         $this->output = DB::connection('mysql_sb')->table('output_rfts_packing')->
+            leftJoin("so_det", "so_det.id", "=", "output_rfts_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             where('status', 'NORMAL')->
             count();
 
         $this->rft = DB::connection('mysql_sb')->table('output_rfts_packing')->
+            leftJoin("so_det", "so_det.id", "=", "output_rfts_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             where('status', 'NORMAL')->
-            whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->
             get();
     }
 
@@ -147,17 +148,17 @@ class Rft extends Component
                             'updated_at' => Carbon::now()
                         ]);
 
-                        $insertRftNds = OutputPacking::create([
-                            'sewing_line' => $this->orderInfo->sewing_line,
-                            'master_plan_id' => $this->orderInfo->id,
-                            'so_det_id' => $this->sizeInput,
-                            'no_cut_size' => $this->noCutInput,
-                            'kode_numbering' => $this->numberingInput,
-                            'status' => 'NORMAL',
-                            'created_by' => Auth::user()->username,
-                            'created_at' => Carbon::now(),
-                            'updated_at' => Carbon::now()
-                        ]);
+                        // $insertRftNds = OutputPacking::create([
+                        //     'sewing_line' => $this->orderInfo->sewing_line,
+                        //     'master_plan_id' => $this->orderInfo->id,
+                        //     'so_det_id' => $this->sizeInput,
+                        //     'no_cut_size' => $this->noCutInput,
+                        //     'kode_numbering' => $this->numberingInput,
+                        //     'status' => 'NORMAL',
+                        //     'created_by' => Auth::user()->username,
+                        //     'created_at' => Carbon::now(),
+                        //     'updated_at' => Carbon::now()
+                        // ]);
 
                         if ($insertRft) {
                             $this->emit('alert', 'success', "1 output berukuran ".$this->sizeInputText." berhasil terekam.");
@@ -239,17 +240,17 @@ class Rft extends Component
                         'updated_at' => Carbon::now()
                     ]);
 
-                    array_push($rapidRftFilteredNds, [
-                        'sewing_line' => $this->orderInfo->sewing_line,
-                        'master_plan_id' => $this->orderInfo->id,
-                        'so_det_id' => $numberingData->so_det_id,
-                        'no_cut_size' => $numberingData->no_cut_size,
-                        'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
-                        'status' => 'NORMAL',
-                        'created_by' => Auth::user()->username,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
-                    ]);
+                    // array_push($rapidRftFilteredNds, [
+                    //     'sewing_line' => $this->orderInfo->sewing_line,
+                    //     'master_plan_id' => $this->orderInfo->id,
+                    //     'so_det_id' => $numberingData->so_det_id,
+                    //     'no_cut_size' => $numberingData->no_cut_size,
+                    //     'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
+                    //     'status' => 'NORMAL',
+                    //     'created_by' => Auth::user()->username,
+                    //     'created_at' => Carbon::now(),
+                    //     'updated_at' => Carbon::now()
+                    // ]);
 
                     $success += 1;
                 } else {
@@ -259,7 +260,7 @@ class Rft extends Component
         }
 
         $rapidRftInsert = RftModel::insert($rapidRftFiltered);
-        $rapidRftInsertNds = OutputPacking::insert($rapidRftFilteredNds);
+        // $rapidRftInsertNds = OutputPacking::insert($rapidRftFilteredNds);
 
         $this->emit('alert', 'success', $success." output berhasil terekam. ");
         $this->emit('alert', 'error', $fail." output gagal terekam.");
@@ -289,15 +290,16 @@ class Rft extends Component
 
         // Get total output
         $this->output = DB::connection('mysql_sb')->table('output_rfts_packing')->
+            leftJoin("so_det", "so_det.id", "=", "output_rfts_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             where('status', 'normal')->
             count();
 
         // Rft
         $this->rft = DB::connection('mysql_sb')->table('output_rfts_packing')->
+            leftJoin("so_det", "so_det.id", "=", "output_rfts_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             where('status', 'NORMAL')->
-            whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->
             get();
 
         return view('livewire.rft');

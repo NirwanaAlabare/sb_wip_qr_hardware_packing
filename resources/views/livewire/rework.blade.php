@@ -56,14 +56,14 @@
                         <div class="loading mx-auto"></div>
                     </div>
                     <div class="row h-100 row-gap-3" id="content-rework">
-                        @foreach ($orderWsDetailSizes as $order)
+                        @foreach ($orderWsDetailSizes->groupBy('size') as $key => $order)
                             <div class="col-md-4">
                                 <div class="bg-rework text-white w-100 h-100 py-auto rounded-3 d-flex flex-column justify-content-center align-items-center">
-                                    <p class="fs-3 mb-0">{{ $order->size }}</p>
-                                    @if ($order->dest != "-" && $order->dest != null)
+                                    <p class="fs-3 mb-0">{{ $key }}</p>
+                                    {{-- @if ($order->dest != "-" && $order->dest != null)
                                         <p class="fs-6 mb-0">{{ $order->dest }}</p>
-                                    @endif
-                                    <p class="fs-5 mb-0">{{ $rework->where('so_det_id', $order->so_det_id)->count() }}</p>
+                                    @endif --}}
+                                    <p class="fs-5 mb-0">{{ $rework->where('size', $key)->count() }}</p>
                                 </div>
                             </div>
                         @endforeach
@@ -174,7 +174,8 @@
                     <table class="table table-bordered text-center align-middle">
                         <tr>
                             <th>No.</th>
-                            <th>ID</th>
+                            <th>Waktu</th>
+                            <th>QR</th>
                             <th>Size</th>
                             <th>Defect Type</th>
                             <th>Defect Area</th>
@@ -190,7 +191,8 @@
                             @foreach ($defects as $defect)
                                 <tr>
                                     <td>{{ $defects->firstItem() + $loop->index }}</td>
-                                    <td>{{ $defect->kode_numbering }}</td>
+                                    <td>{{ $defect->updated_at }}</td>
+                                    <td>{{ $defect->kode_numbering ? $defect->kode_numbering : '-' }}</td>
                                     <td>{{ $defect->so_det_size }}</td>
                                     <td>{{ $defect->defect_type }}</td>
                                     <td>{{ $defect->defect_area }}</td>
@@ -238,7 +240,8 @@
                     <table class="table table-bordered text-center align-middle">
                         <tr>
                             <th>No.</th>
-                            <th>ID</th>
+                            <th>Waktu</th>
+                            <th>QR</th>
                             <th>Size</th>
                             <th>Defect Type</th>
                             <th>Defect Area</th>
@@ -254,10 +257,11 @@
                             @foreach ($reworks as $rework)
                                 <tr>
                                     <td>{{ $reworks->firstItem() + $loop->index }}</td>
-                                    <td>{{ $rework->defect->kode_numbering }}</td>
+                                    <td>{{ $rework->updated_at }}</td>
+                                    <td>{{ $rework->defect->kode_numbering ? $rework->defect->kode_numbering : '-' }}</td>
                                     <td>{{ $rework->so_det_size }}</td>
-                                    <td>{{ $rework->defect->defect_type}}</td>
-                                    <td>{{ $rework->defect->defect_area }}</td>
+                                    <td>{{ $rework->defect->defectType->defect_type}}</td>
+                                    <td>{{ $rework->defect->defectArea->defect_area }}</td>
                                     <td class="text-rework fw-bold">{{ strtoupper($rework->defect->defect_status) }}</td>
                                     <td>
                                         <button type="button" class="btn btn-dark" wire:click="showDefectAreaImage('{{$rework->defect->masterPlan->gambar}}', {{$rework->defect->defect_area_x}}, {{$rework->defect->defect_area_y}})'">
@@ -376,7 +380,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" wire:click='submitRapidInput'>Selesai</button>
+                    <button type="button" class="btn btn-sb-secondary" data-bs-dismiss="modal" wire:click='submitRapidInput'>Selesai</button>
                 </div>
             </div>
         </div>

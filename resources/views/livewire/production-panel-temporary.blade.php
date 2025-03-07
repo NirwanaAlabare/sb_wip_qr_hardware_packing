@@ -13,7 +13,7 @@
         </div>
 
         {{-- Production Panels --}}
-        <h5 class="text-center text-rft-sec fw-bold mb-3">Temporary Input</h5>
+        <h5 class="text-center text-sb-secondary fw-bold mb-3">Temporary Input</h5>
         <div class="production-panel row row-gap-3" id="production-panel">
             @if ($panels)
                 <div class="row row-gap-3">
@@ -63,7 +63,7 @@
                     </div>
                 </div>
                 <div class="d-flex">
-                    <button class="btn btn-rft-sec w-100" wire:click='uploadToMasterPlan()'><i class="fa-regular fa-paper-plane"></i> Upload ke Master Plan</button>
+                    <button class="btn btn-sb-secondary w-100" wire:click='uploadToMasterPlan()'><i class="fa-regular fa-paper-plane"></i> Upload ke Master Plan</button>
                 </div>
             @endif
 
@@ -139,7 +139,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="hideOutputTypeModal()">Batal</button>
-                        {{-- <button type="button" class="btn btn-success" wire:click='submitDefectArea'>Tambahkan</button> --}}
+                        {{-- <button type="button" class="btn btn-sb-secondary" wire:click='submitDefectArea'>Tambahkan</button> --}}
                     </div>
                 </div>
             </div>
@@ -153,7 +153,7 @@
 
         @if (!$panels)
             {{-- Back --}}
-            <a wire:click="toProductionPanel" class="back bg-rft-sec text-light text-center w-auto" id="back-button">
+            <a wire:click="toProductionPanel" class="back bg-sb-secondary text-light text-center w-auto" id="back-button">
                 <i class="fa-regular fa-reply"></i>
             </a>
         @endif

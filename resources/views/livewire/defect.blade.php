@@ -71,14 +71,14 @@
                         <div class="loading mx-auto"></div>
                     </div>
                     <div class="row h-100 row-gap-3" id="content-defect">
-                        @foreach ($orderWsDetailSizes as $order)
+                        @foreach ($orderWsDetailSizes->groupBy('size') as $key => $order)
                             <div class="col-md-4">
                                 <div class="bg-defect text-white w-100 h-100 py-auto rounded-3 d-flex flex-column justify-content-center align-items-center">
-                                    <p class="fs-3 mb-0">{{ $order->size }}</p>
-                                    @if ($order->dest != "-" && $order->dest != null)
+                                    <p class="fs-3 mb-0">{{ $key }}</p>
+                                    {{-- @if ($order->dest != "-" && $order->dest != null)
                                         <p class="fs-6 mb-0">{{ $order->dest }}</p>
-                                    @endif
-                                    <p class="fs-5 mb-0">{{ $defect->where('so_det_id', $order->so_det_id)->count() }}</p>
+                                    @endif --}}
+                                    <p class="fs-5 mb-0">{{ $defect->where('size', $key)->count() }}</p>
                                 </div>
                             </div>
                         @endforeach
@@ -215,10 +215,10 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
                     <div id="regular-submit" wire:ignore.self>
-                        <button type="button" class="btn btn-success" wire:click='submitInput' >Selesai</button>
+                        <button type="button" class="btn btn-sb-secondary" wire:click='submitInput' >Selesai</button>
                     </div>
                     <div id="rapid-submit" wire:ignore.self>
-                        <button type="button" class="btn btn-success" wire:click='submitRapidInput'>Selesai</button>
+                        <button type="button" class="btn btn-sb-secondary" wire:click='submitRapidInput'>Selesai</button>
                     </div>
                 </div>
             </div>
@@ -270,7 +270,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" wire:click='submitProductType'>Tambahkan</button>
+                    <button type="button" class="btn btn-sb-secondary" wire:click='submitProductType'>Tambahkan</button>
                 </div>
             </div>
         </div>
@@ -302,7 +302,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" wire:click='submitDefectType'>Tambahkan</button>
+                    <button type="button" class="btn btn-sb-secondary" wire:click='submitDefectType'>Tambahkan</button>
                 </div>
             </div>
         </div>
@@ -334,7 +334,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" wire:click='submitDefectArea'>Tambahkan</button>
+                    <button type="button" class="btn btn-sb-secondary" wire:click='submitDefectArea'>Tambahkan</button>
                 </div>
             </div>
         </div>
@@ -356,7 +356,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" wire:click='preSubmitRapidInput'>Lanjut</button>
+                    <button type="button" class="btn btn-sb-secondary" data-bs-dismiss="modal" wire:click='preSubmitRapidInput'>Lanjut</button>
                 </div>
             </div>
         </div>

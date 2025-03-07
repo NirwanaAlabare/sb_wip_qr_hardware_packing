@@ -221,10 +221,10 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
                     <div id="regular-submit" wire:ignore.self>
-                        <button type="button" class="btn btn-success" wire:click='submitInput' >Selesai</button>
+                        <button type="button" class="btn btn-sb-secondary" wire:click='submitInput' >Selesai</button>
                     </div>
                     <div id="rapid-submit" wire:ignore.self>
-                        <button type="button" class="btn btn-success" wire:click='submitRapidInput'>Selesai</button>
+                        <button type="button" class="btn btn-sb-secondary" wire:click='submitRapidInput'>Selesai</button>
                     </div>
                 </div>
             </div>
@@ -276,7 +276,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" wire:click='submitProductType'>Tambahkan</button>
+                    <button type="button" class="btn btn-sb-secondary" wire:click='submitProductType'>Tambahkan</button>
                 </div>
             </div>
         </div>
@@ -308,7 +308,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" wire:click='submitDefectType'>Tambahkan</button>
+                    <button type="button" class="btn btn-sb-secondary" wire:click='submitDefectType'>Tambahkan</button>
                 </div>
             </div>
         </div>
@@ -340,7 +340,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" wire:click='submitDefectArea'>Tambahkan</button>
+                    <button type="button" class="btn btn-sb-secondary" wire:click='submitDefectArea'>Tambahkan</button>
                 </div>
             </div>
         </div>
@@ -362,7 +362,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" wire:click='preSubmitRapidInput'>Lanjut</button>
+                    <button type="button" class="btn btn-sb-secondary" data-bs-dismiss="modal" wire:click='preSubmitRapidInput'>Lanjut</button>
                 </div>
             </div>
         </div>

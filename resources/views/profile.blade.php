@@ -2,8 +2,8 @@
     <div class="modal-dialog modal-xs">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title me-3 fw-bold text-rft-sec">Profile</h3>
-                <button class="btn btn-rft-sec rounded-circle me-3 mt-1" id="enable-profile" onclick="enableForm(this, 'disable-profile', 'profile-form')"><i class="fa fa-pencil fa-sm"></i></button>
+                <h3 class="modal-title me-3 fw-bold text-sb-secondary">Profile</h3>
+                <button class="btn btn-sb-secondary rounded-circle me-3 mt-1" id="enable-profile" onclick="enableForm(this, 'disable-profile', 'profile-form')"><i class="fa fa-pencil fa-sm"></i></button>
                 <button class="btn btn-danger rounded-circle me-3 mt-1 d-none" id="disable-profile" onclick="disableForm(this, 'enable-profile', 'profile-form')"><i class="fa-regular fa-xmark fa-sm"></i></button>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -33,7 +33,7 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <button type="submit" class="btn btn-success w-100 d-none">Ubah Profil</button>
+                        <button type="submit" class="btn btn-sb-secondary w-100 d-none">Ubah Profil</button>
                     </div>
                 </form>
                 {{-- <div class="mt-5">

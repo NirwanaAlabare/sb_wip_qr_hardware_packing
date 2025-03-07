@@ -131,14 +131,15 @@ class Defect extends Component
     public function updateOutput()
     {
         $this->output = DB::connection('mysql_sb')->table('output_defects_packing')->
+            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'defect')->
             count();
 
         $this->defect = DB::connection('mysql_sb')->table('output_defects_packing')->
+            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'defect')->
-            whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->
             get();
     }
 
@@ -457,6 +458,7 @@ class Defect extends Component
 
         // Get total output
         $this->output = DB::connection('mysql_sb')->table('output_defects_packing')->
+            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'defect')->
             count();
@@ -472,9 +474,9 @@ class Defect extends Component
 
         // Defect
         $this->defect = DB::connection('mysql_sb')->table('output_defects_packing')->
+            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'defect')->
-            whereRaw("DATE(updated_at) = '".date('Y-m-d')."'")->
             get();
 
         return view('livewire.defect');
