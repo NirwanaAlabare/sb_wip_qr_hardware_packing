@@ -90,8 +90,8 @@ class DatabaseSeeder extends Seeder
         for ($i = 0;$i < 10;$i++) {
             $userPassword = new UserPassword(array(
                 'line_id' => ($i+50),
-                'FullName' => 'PACKINGLINE '.sprintf("%02d", ($i+1)),
-                'Groupp' => 'PACKINGLINE',
+                'FullName' => 'FINISHLINE '.sprintf("%02d", ($i+1)),
+                'Groupp' => 'FINISHLINE',
                 'username' => 'packing_line_'.sprintf("%02d", ($i+1)),
                 'Password' => 'password',
                 'password_encrypt' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',

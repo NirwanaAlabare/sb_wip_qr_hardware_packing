@@ -11,7 +11,7 @@
         <div class="container-fluid">
             <div class="d-flex align-items-center">
                 <a class="navbar-brand" href="{{ url('/') }}"><img src="{{ asset('images/Frame 1.png') }}" alt="" width="130"></a>
-                <p class="mb-0 bg-success p-1 text-light rounded-3 fw-bold">PACKING LINE QR</p>
+                <p class="mb-0 bg-sb-secondary p-1 text-light rounded-3 fw-bold">FINISH LINE QR</p>
             </div>
             <ul class="navbar-nav align-items-center gap-3">
                 <div class="row justify-content-end align-items-center">
