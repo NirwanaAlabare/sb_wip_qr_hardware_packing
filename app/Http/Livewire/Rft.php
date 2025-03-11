@@ -240,17 +240,17 @@ class Rft extends Component
                         'updated_at' => Carbon::now()
                     ]);
 
-                    // array_push($rapidRftFilteredNds, [
-                    //     'sewing_line' => $this->orderInfo->sewing_line,
-                    //     'master_plan_id' => $this->orderInfo->id,
-                    //     'so_det_id' => $numberingData->so_det_id,
-                    //     'no_cut_size' => $numberingData->no_cut_size,
-                    //     'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
-                    //     'status' => 'NORMAL',
-                    //     'created_by' => Auth::user()->username,
-                    //     'created_at' => Carbon::now(),
-                    //     'updated_at' => Carbon::now()
-                    // ]);
+                    array_push($rapidRftFilteredNds, [
+                        'sewing_line' => $this->orderInfo->sewing_line,
+                        'master_plan_id' => $this->orderInfo->id,
+                        'so_det_id' => $numberingData->so_det_id,
+                        'no_cut_size' => $numberingData->no_cut_size,
+                        'kode_numbering' => $this->rapidRft[$i]['numberingInput'],
+                        'status' => 'NORMAL',
+                        'created_by' => Auth::user()->username,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
 
                     $success += 1;
                 } else {
