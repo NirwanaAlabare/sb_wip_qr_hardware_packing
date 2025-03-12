@@ -148,6 +148,15 @@ function logout(url) {
     });
 }
 
+// filter modal
+function showFilterModal() {
+    $("#filter-modal").modal("show");
+}
+
+function hideFilterModal() {
+    $("#filter-modal").modal("hide");
+}
+
 // defect modal
 function showDefectModal(additional) {
     $("#defect-modal").modal("show");
