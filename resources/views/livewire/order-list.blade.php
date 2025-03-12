@@ -108,7 +108,7 @@
     <div class="modal" tabindex="-1" id="filter-modal" wire:ignore.self>
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-rft-sec text-light">
+                <div class="modal-header bg-sb-secondary text-light">
                     <h5 class="modal-title"><i class="fa-regular fa-filter"></i> FILTER</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -183,7 +183,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="fa-regular fa-times"></i> Tutup</button>
-                    <button type="button" class="btn btn-rft-sec" wire:click="clearFilter"><i class="fa-regular fa-broom"></i> Bersihkan</button>
+                    <button type="button" class="btn btn-sb-secondary" wire:click="clearFilter"><i class="fa-regular fa-broom"></i> Bersihkan</button>
                     {{-- <button type="button" class="btn btn-sb-secondary" wire:click='submitFilter'><i class="fa-regular fa-check"></i> Terapkan</button> --}}
                 </div>
             </div>
