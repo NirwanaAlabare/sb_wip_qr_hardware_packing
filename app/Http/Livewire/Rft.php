@@ -109,8 +109,7 @@ class Rft extends Component
 
     public function submitInput()
     {
-        ini_set('max_execution_time', '0');
-        ini_set('memory_limit', '0');
+        ini_set('memory_limit', '2048M');
 
         $this->emit('qrInputFocus', 'rft');
 
@@ -188,9 +187,6 @@ class Rft extends Component
     }
 
     public function pushRapidRft($numberingInput, $sizeInput, $sizeInputText) {
-        ini_set('max_execution_time', '0');
-        ini_set('memory_limit', '0');
-
         $exist = false;
 
         foreach ($this->rapidRft as $item) {
@@ -211,7 +207,6 @@ class Rft extends Component
     }
 
     public function submitRapidInput() {
-        ini_set('max_execution_time', '0');
         ini_set('memory_limit', '2048M');
 
         $rapidRftFiltered = [];
@@ -279,7 +274,6 @@ class Rft extends Component
     }
 
     public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText) {
-        ini_set('max_execution_time', '0');
         ini_set('memory_limit', '2048M');
 
         $this->numberingInput = $scannedNumbering;
@@ -308,11 +302,7 @@ class Rft extends Component
             count();
 
         // Rft
-        $this->rft = DB::connection('mysql_sb')->table('output_rfts_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_rfts_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('status', 'NORMAL')->
-            get();
+        $this->rft = collect(DB::select("select output_rfts_packing.*, so_det.size, COUNT(output_rfts_packing.id) output from `output_rfts_packing` left join `so_det` on `so_det`.`id` = `output_rfts_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `status` = 'NORMAL' group by so_det.id"));
 
         return view('livewire.rft');
     }

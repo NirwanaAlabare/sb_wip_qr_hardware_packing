@@ -32,7 +32,7 @@
                         <div class="d-flex align-items-center gap-3 me-3">
                             <p class="mb-1 fs-5">RFT</p>
                             <p class="mb-1 fs-5">:</p>
-                            <p id="rft-qty" class="mb-1 fs-5">{{ $output }}</p>
+                            <p id="rft-qty" class="mb-1 fs-5">{{ $rft->sum('output') }}</p>
                         </div>
                         <button class="btn btn-dark" wire:click="$emit('preSubmitUndo', 'rft')">
                             <i class="fa-regular fa-rotate-left"></i>
@@ -60,7 +60,7 @@
                                     {{-- @if ($order->dest != "-" && $order->dest != null)
                                         <p class="fs-6 mb-0">{{ $order->dest }}</p>
                                     @endif --}}
-                                    <p class="fs-5 mb-0">{{ $rft->where('size', $key)->count() }}</p>
+                                    <p class="fs-5 mb-0">{{ $rft->where('size', $key)->sum('output') }}</p>
                                 </div>
                             </div>
                         @endforeach
