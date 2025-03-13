@@ -32,7 +32,7 @@
                         <div class="d-flex align-items-center gap-3 me-3">
                             <p class="mb-1 fs-5">RFT</p>
                             <p class="mb-1 fs-5">:</p>
-                            <p id="rft-qty" class="mb-1 fs-5">{{ $output }}</p>
+                            <p id="rft-qty" class="mb-1 fs-5">{{ $rft->count() }}</p>
                         </div>
                         <button class="btn btn-dark" wire:click="$emit('preSubmitUndo', 'rft')">
                             <i class="fa-regular fa-rotate-left"></i>

@@ -19,7 +19,6 @@ class Rft extends Component
 {
     public $orderInfo;
     public $orderWsDetailSizes;
-    public $output;
     public $sizeInput;
     public $sizeInputText;
     public $noCutInput;
@@ -51,7 +50,6 @@ class Rft extends Component
     {
         $this->orderWsDetailSizes = $orderWsDetailSizes;
         $session->put('orderWsDetailSizes', $orderWsDetailSizes);
-        $this->output = 0;
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->noCutInput = null;
@@ -89,12 +87,6 @@ class Rft extends Component
 
     public function updateOutput()
     {
-        $this->output = DB::connection('mysql_sb')->table('output_rfts_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_rfts_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('status', 'NORMAL')->
-            count();
-
         $this->rft = DB::connection('mysql_sb')->table('output_rfts_packing')->
             leftJoin("so_det", "so_det.id", "=", "output_rfts_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
@@ -293,13 +285,6 @@ class Rft extends Component
 
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
-
-        // Get total output
-        $this->output = DB::connection('mysql_sb')->table('output_rfts_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_rfts_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('status', 'normal')->
-            count();
 
         // Rft
         $this->rft = DB::connection('mysql_sb')->table('output_rfts_packing')->
