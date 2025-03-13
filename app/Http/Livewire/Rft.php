@@ -109,8 +109,7 @@ class Rft extends Component
 
     public function submitInput()
     {
-        ini_set('max_execution_time', '0');
-        ini_set('memory_limit', '0');
+        ini_set('memory_limit', '2048M');
 
         $this->emit('qrInputFocus', 'rft');
 
@@ -188,9 +187,6 @@ class Rft extends Component
     }
 
     public function pushRapidRft($numberingInput, $sizeInput, $sizeInputText) {
-        ini_set('max_execution_time', '0');
-        ini_set('memory_limit', '0');
-
         $exist = false;
 
         foreach ($this->rapidRft as $item) {
@@ -211,7 +207,6 @@ class Rft extends Component
     }
 
     public function submitRapidInput() {
-        ini_set('max_execution_time', '0');
         ini_set('memory_limit', '2048M');
 
         $rapidRftFiltered = [];
@@ -279,7 +274,6 @@ class Rft extends Component
     }
 
     public function setAndSubmitInput($scannedNumbering, $scannedSize, $scannedSizeText) {
-        ini_set('max_execution_time', '0');
         ini_set('memory_limit', '2048M');
 
         $this->numberingInput = $scannedNumbering;
