@@ -32,7 +32,7 @@
                         <div class="d-flex align-items-center gap-3 me-3">
                             <p class="mb-1 fs-5">REJECT</p>
                             <p class="mb-1 fs-5">:</p>
-                            <p id="reject-qty" class="mb-1 fs-5">{{ $output }}</p>
+                            <p id="reject-qty" class="mb-1 fs-5">{{ $reject->count() }}</p>
                         </div>
                         <button class="btn btn-dark"  wire:click="$emit('preSubmitUndo', 'reject')" disabled>
                             <i class="fa-regular fa-rotate-left"></i>
@@ -189,10 +189,10 @@
                                     <td>{{ $defect->updated_at ? $defect->created_at : $defect->updated_at }}</td>
                                     <td>{{ $defect->kode_numbering ? $defect->kode_numbering : '-' }}</td>
                                     <td>{{ $defect->so_det_size }}</td>
-                                    <td>{{ $defect->defectType->defect_type}}</td>
-                                    <td>{{ $defect->defectArea->defect_area }}</td>
+                                    <td>{{ $defect->defect_type}}</td>
+                                    <td>{{ $defect->defect_area }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-dark" wire:click="showDefectAreaImage('{{$defect->masterPlan->gambar}}', {{$defect->defect_area_x}}, {{$defect->defect_area_y}})'">
+                                        <button type="button" class="btn btn-dark" wire:click="showDefectAreaImage('{{$allDefectImage->gambar}}', {{$defect->defect_area_x}}, {{$defect->defect_area_y}})'">
                                             <i class="fa-regular fa-image"></i>
                                         </button>
                                     </td>
@@ -203,7 +203,7 @@
                                         </div>
                                         <div wire:loading.remove>
                                             <button class="btn btn-sm btn-reject fw-bold w-100"
-                                                wire:click="$emit('preSubmitReject', '{{ $defect->id }}', '{{ $defect->so_det_size }}', '{{ $defect->defectType->defect_type }}', '{{ $defect->defectArea->defect_area }}', '{{ $defect->masterPlan->gambar }}', '{{ $defect->defect_area_x }}', '{{ $defect->defect_area_y }}')">
+                                                wire:click="$emit('preSubmitReject', '{{ $defect->id }}', '{{ $defect->so_det_size }}', '{{ $defect->defect_type }}', '{{ $defect->defect_area }}', '{{ $allDefectImage->gambar }}', '{{ $defect->defect_area_x }}', '{{ $defect->defect_area_y }}')">
                                                 REJECT
                                             </button>
                                         </div>

@@ -5,11 +5,7 @@ namespace App\Http\Livewire;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\SignalBit\Rft;
-use App\Models\SignalBit\Defect;
-use App\Models\SignalBit\Reject;
-use App\Models\SignalBit\Rework;
-use App\Models\SignalBit\MasterPlan;
+use DB;
 
 class HistoryContent extends Component
 {
@@ -54,7 +50,7 @@ class HistoryContent extends Component
         //     LIMIT 10
         // "));
 
-        $latestOutputRfts = Rft::selectRaw('
+        $latestOutputRfts = DB::table('output_rfts_packing')->selectRaw('
                 output_rfts_packing.updated_at,
                 so_det.size as size,
                 count(output_rfts_packing.id) as total
@@ -75,7 +71,7 @@ class HistoryContent extends Component
             orderBy("output_rfts_packing.created_at", "desc")->
             limit("5")->get();
 
-        $latestOutputDefects = Defect::selectRaw('
+        $latestOutputDefects = DB::table('output_defects_packing')->selectRaw('
                 output_defects_packing.updated_at,
                 output_defect_types.defect_type,
                 output_defect_areas.defect_area,
@@ -111,7 +107,7 @@ class HistoryContent extends Component
             orderBy("output_defects_packing.created_at", "desc")->
             limit("5")->get();
 
-        $latestOutputRejects = Reject::selectRaw('output_rejects_packing.updated_at, so_det.size as size, count(*) as total')->
+        $latestOutputRejects = DB::table('output_rejects_packing')->selectRaw('output_rejects_packing.updated_at, so_det.size as size, count(*) as total')->
             leftJoin('master_plan', 'master_plan.id', '=', 'output_rejects_packing.master_plan_id')->
             leftJoin('so_det', 'so_det.id', '=', 'output_rejects_packing.so_det_id')->
             where('master_plan.sewing_line', Auth::user()->username);
@@ -128,22 +124,22 @@ class HistoryContent extends Component
             orderBy("output_rejects_packing.created_at", "desc")->
             limit("5")->get();
 
-        $latestOutputReworks = Rework::selectRaw('
+        $latestOutputReworks = DB::table('output_reworks_packing')->selectRaw('
                 output_reworks_packing.updated_at,
                 output_defect_types.defect_type,
                 output_defect_areas.defect_area,
                 master_plan.gambar,
-                output_defects.defect_area_x,
-                output_defects.defect_area_y,
+                output_defects_packing.defect_area_x,
+                output_defects_packing.defect_area_y,
                 so_det.size as size,
                 count(*) as total
             ')->
-            leftJoin('output_defects', 'output_defects.id', '=', 'output_reworks_packing.defect_id')->
-            leftJoin('output_product_types', 'output_product_types.id', '=', 'output_defects.product_type_id')->
-            leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects.defect_type_id')->
-            leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects.defect_area_id')->
-            leftJoin('master_plan', 'master_plan.id', '=', 'output_defects.master_plan_id')->
-            leftJoin('so_det', 'so_det.id', '=', 'output_defects.so_det_id')->
+            leftJoin('output_defects_packing', 'output_defects_packing.id', '=', 'output_reworks_packing.defect_id')->
+            leftJoin('output_product_types', 'output_product_types.id', '=', 'output_defects_packing.product_type_id')->
+            leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects_packing.defect_type_id')->
+            leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects_packing.defect_area_id')->
+            leftJoin('master_plan', 'master_plan.id', '=', 'output_defects_packing.master_plan_id')->
+            leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             where('master_plan.sewing_line', Auth::user()->username);
             if (Auth::user()->Groupp == 'SEWING') {
                 $latestOutputReworks->where('master_plan.sewing_line', Auth::user()->username);
@@ -158,8 +154,8 @@ class HistoryContent extends Component
                 "output_defect_types.defect_type",
                 "output_defect_areas.defect_area",
                 "master_plan.gambar",
-                "output_defects.defect_area_x",
-                "output_defects.defect_area_y",
+                "output_defects_packing.defect_area_x",
+                "output_defects_packing.defect_area_y",
                 "so_det.size"
             )->
             orderBy("output_reworks_packing.updated_at", "desc")->

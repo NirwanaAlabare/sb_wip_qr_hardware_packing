@@ -3,7 +3,6 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use App\Models\SignalBit\MasterPlan;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\DefectType;
@@ -11,7 +10,6 @@ use App\Models\SignalBit\DefectArea;
 use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\Rework;
 use App\Models\SignalBit\Undo;
-use App\Models\Nds\Numbering;
 use App\Models\Nds\OutputPacking;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Auth;
@@ -200,8 +198,8 @@ class ProductionPanel extends Component
         $validatedData = $this->validate();
 
         $size = DB::select(DB::raw("SELECT * FROM so_det WHERE id = '".$this->undoSize."'"));
-        $defectType = DefectType::select('defect_type')->find($this->undoDefectType);
-        $defectArea = DefectArea::select('defect_area')->find($this->undoDefectArea);
+        $defectType = DB::table('output_defect_types')->select('defect_type')->find($this->undoDefectType);
+        $defectArea = DB::table('output_defect_areas')->select('defect_area')->find($this->undoDefectArea);
 
         switch ($this->undoType) {
             case 'rft' :
@@ -247,7 +245,7 @@ class ProductionPanel extends Component
                 break;
             case 'defect' :
                 // Undo DEFECT
-                $defectQuery = Defect::selectRaw('output_defects_packing.id as defect_id, output_defects_packing.*')->
+                $defectQuery = DB::table('output_defects_packing')->selectRaw('output_defects_packing.id as defect_id, output_defects_packing.*')->
                     leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects_packing.defect_area_id')->
                     leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects_packing.defect_type_id')->
                     where('master_plan_id', $this->orderInfo->id)->
@@ -320,7 +318,7 @@ class ProductionPanel extends Component
                 break;
             case 'rework' :
                 // Undo REWORK
-                $defectQuery = Defect::selectRaw('output_defects_packing.id as defect_id, output_defects_packing.*')->
+                $defectQuery = DB::table('output_defects_packing')->selectRaw('output_defects_packing.id as defect_id, output_defects_packing.*')->
                     leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects_packing.defect_area_id')->
                     leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects_packing.defect_type_id')->
                     where('master_plan_id', $this->orderInfo->id)->
@@ -365,7 +363,7 @@ class ProductionPanel extends Component
 
         $this->selectedSize = 'all';
 
-        $this->orderInfo = MasterPlan::selectRaw("
+        $this->orderInfo = DB::table("master_plan")->selectRaw("
                 master_plan.id as id,
                 master_plan.tgl_plan as tgl_plan,
                 REPLACE(master_plan.sewing_line, '_', ' ') as sewing_line,
@@ -389,7 +387,7 @@ class ProductionPanel extends Component
             ->where('master_plan.id', $this->selectedColor)
             ->first();
 
-        $this->orderWsDetails = MasterPlan::selectRaw("
+        $this->orderWsDetails = DB::table("master_plan")->selectRaw("
                 master_plan.id as id,
                 master_plan.tgl_plan as tgl_plan,
                 master_plan.color as color,
@@ -522,28 +520,28 @@ class ProductionPanel extends Component
         $this->orderDate = $this->orderInfo->tgl_plan;
 
         // Get total output
-        $this->outputRft = Rft::
+        $this->outputRft = DB::table('output_rfts_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('status', 'NORMAL')->
             count();
-        $this->outputDefect = Defect::
+        $this->outputDefect = DB::table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'defect')->
             count();
-        $this->outputReject = Reject::
+        $this->outputReject = DB::table('output_rejects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             count();
-        $this->outputRework = Defect::
+        $this->outputRework = DB::table('output_defects_packing')->
             where('master_plan_id', $this->orderInfo->id)->
             where('defect_status', 'reworked')->
             count();
-        $sqlFiltered = Rft::select('id')->where('master_plan_id', $this->orderInfo->id)->where('status', 'NORMAL');
+        $sqlFiltered = DB::table('output_rfts_packing')->select('id')->where('master_plan_id', $this->orderInfo->id)->where('status', 'NORMAL');
         $this->outputFiltered = $this->selectedSize == 'all' ? $sqlFiltered->count() : $sqlFiltered->where('so_det_id', $this->selectedSize)->count();
 
         // Undo size data
         switch ($this->undoType) {
             case 'rft' :
-                $this->undoSizes = Rft::selectRaw('so_det.id as so_det_id, so_det.size, count(*) as total')->
+                $this->undoSizes = DB::table('output_rfts_packing')->selectRaw('so_det.id as so_det_id, so_det.size, count(*) as total')->
                     leftJoin('so_det', 'so_det.id', '=', 'output_rfts_packing.so_det_id')->
                     where('master_plan_id', $this->orderInfo->id)->
                     where('status', 'NORMAL')->
@@ -553,7 +551,7 @@ class ProductionPanel extends Component
                     get();
                 break;
             case 'defect' :
-                $this->undoSizes = Defect::selectRaw('so_det.id as so_det_id, so_det.size, count(*) as total')->
+                $this->undoSizes = DB::table('output_defects_packing')->selectRaw('so_det.id as so_det_id, so_det.size, count(*) as total')->
                     leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
                     where('master_plan_id', $this->orderInfo->id)->
                     where('status', 'NORMAL')->
@@ -564,7 +562,7 @@ class ProductionPanel extends Component
                     get();
                 break;
             case 'reject' :
-                $this->undoSizes = Reject::selectRaw('so_det.id as so_det_id, so_det.size, count(*) as total')->
+                $this->undoSizes = DB::table('output_rejects_packing')->selectRaw('so_det.id as so_det_id, so_det.size, count(*) as total')->
                     leftJoin('so_det', 'so_det.id', '=', 'output_rejects_packing.so_det_id')->
                     where('master_plan_id', $this->orderInfo->id)->
                     where('status', 'NORMAL')->
@@ -574,7 +572,7 @@ class ProductionPanel extends Component
                     get();
                 break;
             case 'rework' :
-                $this->undoSizes = Rework::selectRaw('so_det.id as so_det_id, so_det.size, count(*) as total')->
+                $this->undoSizes = DB::table('output_defects_packing')->selectRaw('so_det.id as so_det_id, so_det.size, count(*) as total')->
                     leftJoin('output_defects_packing', 'output_defects_packing.id', '=', 'output_reworks_packing.defect_id')->
                     leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
                     where('output_defects_packing.master_plan_id', $this->orderInfo->id)->
@@ -587,8 +585,8 @@ class ProductionPanel extends Component
         }
 
         // Defect
-        $undoDefectTypes = DefectType::all();
-        $undoDefectAreas = DefectArea::all();
+        $undoDefectTypes = DB::table('output_defect_types')->get();
+        $undoDefectAreas = DB::table('output_defect_areas')->get();
 
         return view('livewire.production-panel', ['undoDefectTypes' => $undoDefectTypes, 'undoDefectAreas' => $undoDefectAreas]);
     }

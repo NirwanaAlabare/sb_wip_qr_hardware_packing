@@ -39,7 +39,7 @@ class ProductionController extends Controller
             ->where('master_plan.id', $id)
             ->first();
 
-        $orderWsDetails = MasterPlan::selectRaw("
+        $orderWsDetails = DB::table("master_plan")->selectRaw("
                 master_plan.id as id,
                 master_plan.tgl_plan as tgl_plan,
                 master_plan.color as color,

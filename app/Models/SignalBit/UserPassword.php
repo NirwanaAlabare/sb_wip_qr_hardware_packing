@@ -24,6 +24,15 @@ class UserPassword extends Authenticatable
         'remember_token'
     ];
 
+    protected $visible = [
+        'line_id',
+        'username',
+        'FullName',
+        'Password',
+        'password_encrypt',
+        'remember_token'
+    ];
+
     public $timestamps = false;
 
     public function getAuthPassword() {

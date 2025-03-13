@@ -49,7 +49,6 @@ class Rework extends Component
 
     public $info;
 
-    public $output;
     public $rework;
     public $sizeInputText;
     public $noCutInput;
@@ -109,12 +108,6 @@ class Rework extends Component
 
     public function updateOutput()
     {
-        $this->output = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'reworked')->
-            count();
-
         $this->rework = DB::connection('mysql_sb')->table('output_defects_packing')->
             leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
             where('master_plan_id', $this->orderInfo->id)->
@@ -136,7 +129,6 @@ class Rework extends Component
 
         $this->info = true;
 
-        $this->output = 0;
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->noCutInput = null;
@@ -260,7 +252,7 @@ class Rework extends Component
     }
 
     public function submitMassRework() {
-        $selectedDefect = Defect::selectRaw('output_defects_packing.*, so_det.size as size')->
+        $selectedDefect = DB::table('output_defects_packing')->selectRaw('output_defects_packing.*, so_det.size as size')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->
@@ -546,8 +538,6 @@ class Rework extends Component
             }
         }
 
-        // dd($rapidReworkFiltered, $defectIds, $rftData);
-
         $rapidDefectUpdate = Defect::whereIn('id', $defectIds)->update(["defect_status" => "reworked"]);
         $rapidRftInsert = Rft::insert($rftData);
         $rapidRftInsertNds = OutputPacking::insert($rftDataNds);
@@ -578,7 +568,7 @@ class Rework extends Component
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->
             get();
 
-        $allDefectList =DB::connection('mysql_sb')->table('output_defects_packing')->selectRaw('output_defects_packing.defect_type_id, output_defects_packing.defect_area_id, output_defect_types.defect_type, output_defect_areas.defect_area, count(*) as total')->
+        $allDefectList = DB::connection('mysql_sb')->table('output_defects_packing')->selectRaw('output_defects_packing.defect_type_id, output_defects_packing.defect_area_id, output_defect_types.defect_type, output_defect_areas.defect_area, count(*) as total')->
             leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects_packing.defect_area_id')->
             leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects_packing.defect_type_id')->
             where('output_defects_packing.defect_status', 'defect')->
@@ -593,7 +583,7 @@ class Rework extends Component
             orderBy('output_defects_packing.updated_at', 'desc')->
             paginate(5, ['*'], 'allDefectListPage');
 
-        $defects = Defect::selectRaw('output_defects_packing.*, output_defect_types.defect_type, output_defect_areas.defect_area, so_det.size as so_det_size')->
+        $defects = DB::table('output_defects_packing')->selectRaw('output_defects_packing.*, output_defect_types.defect_type, output_defect_areas.defect_area, so_det.size as so_det_size')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects_packing.defect_area_id')->
             leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects_packing.defect_type_id')->
@@ -608,7 +598,7 @@ class Rework extends Component
             )")->
             orderBy('output_defects_packing.updated_at', 'desc')->paginate(10, ['*'], 'defectsPage');
 
-        $reworks = ReworkModel::selectRaw('output_reworks_packing.*, output_defect_types.defect_type, output_defect_areas.defect_area, so_det.size as so_det_size')->
+        $reworks = DB::table('output_reworks_packing')->selectRaw('output_defects_packing.*, output_defect_types.defect_type, output_defect_areas.defect_area, so_det.size as so_det_size')->
             leftJoin('output_defects_packing', 'output_defects_packing.id', '=', 'output_reworks_packing.defect_id')->
             leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects_packing.defect_area_id')->
             leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects_packing.defect_type_id')->
@@ -632,12 +622,6 @@ class Rework extends Component
             where('output_defects_packing.defect_type_id', $this->massDefectType)->
             where('output_defects_packing.defect_area_id', $this->massDefectArea)->
             groupBy('output_defects_packing.so_det_id', 'so_det.size')->get();
-
-        $this->output = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'reworked')->
-            count();
 
         $this->rework = DB::connection('mysql_sb')->table('output_defects_packing')->
             leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
