@@ -128,11 +128,7 @@ class Defect extends Component
 
     public function updateOutput()
     {
-        $this->defect = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'defect')->
-            get();
+        $this->defect = collect(DB::select("select output_defects_packing.*, so_det.size, COUNT(output_defects_packing.id) output from `output_defects_packing` left join `so_det` on `so_det`.`id` = `output_defects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `defect_status` = 'defect' group by so_det.id"));
     }
 
     public function updatedproductTypeImageAdd()
@@ -459,11 +455,7 @@ class Defect extends Component
         $this->defectAreas = DB::table('output_defect_areas')->orderBy('defect_area')->get();
 
         // Defect
-        $this->defect = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'defect')->
-            get();
+        $this->defect = collect(DB::select("select output_defects_packing.*, so_det.size, COUNT(output_defects_packing.id) output from `output_defects_packing` left join `so_det` on `so_det`.`id` = `output_defects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `defect_status` = 'defect' group by so_det.id"));
 
         return view('livewire.defect');
     }
