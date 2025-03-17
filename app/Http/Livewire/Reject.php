@@ -25,7 +25,6 @@ class Reject extends Component
 
     public $orderInfo;
     public $orderWsDetailSizes;
-    public $output;
     public $sizeInput;
     public $sizeInputText;
     public $noCutInput;
@@ -147,18 +146,8 @@ class Reject extends Component
 
     public function updateOutput()
     {
-        // Get total output
-        $this->output = RejectModel::
-            leftJoin("so_det", "so_det.id", "=", "output_rejects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            count();
-
         // Reject
-        $this->reject = RejectModel::
-            selectRaw('output_rejects_packing.*, so_det.size')->
-            leftJoin('so_det', 'so_det.id', '=', 'output_rejects_packing.so_det_id')->
-            where('master_plan_id', $this->orderInfo->id)->
-            get();
+        $this->reject = collect(DB::select("select output_rejects_packing.*, so_det.size, COUNT(output_rejects_packing.id) output from `output_rejects_packing` left join `so_det` on `so_det`.`id` = `output_rejects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `status` = 'NORMAL' group by so_det.id"));
     }
 
     public function clearInput()
@@ -723,26 +712,13 @@ class Reject extends Component
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
 
-        // Get total output
-        $this->output = DB::connection('mysql_sb')->table('output_rejects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_rejects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            count();
-
-        // Reject
-        $this->reject = DB::connection('mysql_sb')->table('output_rejects_packing')->
-            selectRaw('output_rejects_packing.*, so_det.size')->
-            leftJoin('so_det', 'so_det.id', '=', 'output_rejects_packing.so_det_id')->
-            where('master_plan_id', $this->orderInfo->id)->
-            get();
-
         $this->allDefectImage = MasterPlan::select('gambar')->find($this->orderInfo->id);
 
-        $this->allDefectPosition = Defect::where('output_defects_packing.defect_status', 'defect')->
+        $this->allDefectPosition = DB::table('output_defects_packing')->where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->
             get();
 
-        $allDefectList = Defect::selectRaw('output_defects_packing.defect_type_id, output_defects_packing.defect_area_id, output_defect_types.defect_type, output_defect_areas.defect_area, count(*) as total')->
+        $allDefectList = DB::table('output_defects_packing')->selectRaw('output_defects_packing.defect_type_id, output_defects_packing.defect_area_id, output_defect_types.defect_type, output_defect_areas.defect_area, count(*) as total')->
             leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects_packing.defect_area_id')->
             leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects_packing.defect_type_id')->
             where('output_defects_packing.defect_status', 'defect')->
@@ -757,7 +733,7 @@ class Reject extends Component
             orderBy('output_defects_packing.updated_at', 'desc')->
             paginate(5, ['*'], 'allDefectListPage');
 
-        $defects = Defect::selectRaw('output_defects_packing.*, so_det.size as so_det_size')->
+        $defects = DB::table('output_defects_packing')->selectRaw('output_defects_packing.*, output_defect_types.defect_type, output_defect_areas.defect_area, so_det.size as so_det_size')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             leftJoin('output_defect_areas', 'output_defect_areas.id', '=', 'output_defects_packing.defect_area_id')->
             leftJoin('output_defect_types', 'output_defect_types.id', '=', 'output_defects_packing.defect_type_id')->
@@ -788,7 +764,7 @@ class Reject extends Component
             )")->
             orderBy('output_rejects_packing.updated_at', 'desc')->paginate(10, ['*'], 'rejectsPage');
 
-        $this->massSelectedDefect = Defect::selectRaw('output_defects_packing.so_det_id, so_det.size as size, count(*) as total')->
+        $this->massSelectedDefect = DB::table('output_defects_packing')->selectRaw('output_defects_packing.so_det_id, so_det.size as size, count(*) as total')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->
@@ -797,10 +773,13 @@ class Reject extends Component
             groupBy('output_defects_packing.so_det_id', 'so_det.size')->get();
 
         // Defect types
-        $this->defectTypes = DefectType::whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_type')->get();
+        $this->defectTypes = DB::table("output_defect_types")->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_type')->get();
 
         // Defect areas
-        $this->defectAreas = DefectArea::whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_area')->get();
+        $this->defectAreas = DB::table("output_defect_areas")->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_area')->get();
+
+        // Reject
+        $this->reject = collect(DB::select("select output_rejects_packing.*, so_det.size, COUNT(output_rejects_packing.id) output from `output_rejects_packing` left join `so_det` on `so_det`.`id` = `output_rejects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `status` = 'NORMAL' group by so_det.id"));
 
         return view('livewire.reject', ['defects' => $defects, 'rejects' => $rejects, 'allDefectList' => $allDefectList]);
     }

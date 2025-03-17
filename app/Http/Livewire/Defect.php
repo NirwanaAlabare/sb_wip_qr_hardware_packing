@@ -7,9 +7,9 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Session\SessionManager;
 use App\Models\SignalBit\MasterPlan;
-use App\Models\SignalBit\ProductType;
-use App\Models\SignalBit\DefectType;
-use App\Models\SignalBit\DefectArea;
+// use App\Models\SignalBit\ProductType;
+// use App\Models\SignalBit\DefectType;
+// use App\Models\SignalBit\DefectArea;
 use App\Models\SignalBit\Defect as DefectModel;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Reject;
@@ -25,7 +25,6 @@ class Defect extends Component
 
     public $orderInfo;
     public $orderWsDetailSizes;
-    public $output;
     public $sizeInput;
     public $sizeInputText;
     public $numberingInput;
@@ -85,7 +84,6 @@ class Defect extends Component
     {
         $this->orderWsDetailSizes = $orderWsDetailSizes;
         $session->put('orderWsDetailSizes', $orderWsDetailSizes);
-        $this->output = 0;
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->numberingInput = null;
@@ -130,17 +128,7 @@ class Defect extends Component
 
     public function updateOutput()
     {
-        $this->output = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'defect')->
-            count();
-
-        $this->defect = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'defect')->
-            get();
+        $this->defect = collect(DB::select("select output_defects_packing.*, so_det.size, COUNT(output_defects_packing.id) output from `output_defects_packing` left join `so_det` on `so_det`.`id` = `output_defects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `defect_status` = 'defect' group by so_det.id"));
     }
 
     public function updatedproductTypeImageAdd()
@@ -150,69 +138,70 @@ class Defect extends Component
         ]);
     }
 
-    public function submitProductType()
-    {
-        if ($this->productTypeAdd && $this->productTypeImageAdd) {
+    // Legacy
+        // public function submitProductType()
+        // {
+        //     if ($this->productTypeAdd && $this->productTypeImageAdd) {
 
-            $productTypeImageAddName = md5($this->productTypeImageAdd . microtime()).'.'.$this->productTypeImageAdd->extension();
-            $this->productTypeImageAdd->storeAs('public/images', $productTypeImageAddName);
+        //         $productTypeImageAddName = md5($this->productTypeImageAdd . microtime()).'.'.$this->productTypeImageAdd->extension();
+        //         $this->productTypeImageAdd->storeAs('public/images', $productTypeImageAddName);
 
-            $createProductType = ProductType::create([
-                'product_type' => $this->productTypeAdd,
-                'image' => $productTypeImageAddName,
-            ]);
+        //         $createProductType = ProductType::create([
+        //             'product_type' => $this->productTypeAdd,
+        //             'image' => $productTypeImageAddName,
+        //         ]);
 
-            if ($createProductType) {
-                $this->emit('alert', 'success', 'Product Time : '.$this->productTypeAdd.' berhasil ditambahkan.');
+        //         if ($createProductType) {
+        //             $this->emit('alert', 'success', 'Product Time : '.$this->productTypeAdd.' berhasil ditambahkan.');
 
-                $this->productTypeAdd = null;
-                $this->productTypeImageAdd = null;
-            } else {
-                $this->emit('alert', 'error', 'Terjadi kesalahan.');
-            }
-        } else {
-            $this->emit('alert', 'error', 'Harap tentukan nama tipe produk beserta gambarnya');
-        }
-    }
+        //             $this->productTypeAdd = null;
+        //             $this->productTypeImageAdd = null;
+        //         } else {
+        //             $this->emit('alert', 'error', 'Terjadi kesalahan.');
+        //         }
+        //     } else {
+        //         $this->emit('alert', 'error', 'Harap tentukan nama tipe produk beserta gambarnya');
+        //     }
+        // }
 
-    public function submitDefectType()
-    {
-        if ($this->defectTypeAdd) {
-            $createDefectType = DefectType::create([
-                'defect_type' => $this->defectTypeAdd
-            ]);
+        // public function submitDefectType()
+        // {
+        //     if ($this->defectTypeAdd) {
+        //         $createDefectType = DefectType::create([
+        //             'defect_type' => $this->defectTypeAdd
+        //         ]);
 
-            if ($createDefectType) {
-                $this->emit('alert', 'success', 'Defect type : '.$this->defectTypeAdd.' berhasil ditambahkan.');
+        //         if ($createDefectType) {
+        //             $this->emit('alert', 'success', 'Defect type : '.$this->defectTypeAdd.' berhasil ditambahkan.');
 
-                $this->defectTypeAdd = '';
-            } else {
-                $this->emit('alert', 'error', 'Terjadi kesalahan.');
-            }
-        } else {
-            $this->emit('alert', 'error', 'Harap tentukan nama defect type');
-        }
-    }
+        //             $this->defectTypeAdd = '';
+        //         } else {
+        //             $this->emit('alert', 'error', 'Terjadi kesalahan.');
+        //         }
+        //     } else {
+        //         $this->emit('alert', 'error', 'Harap tentukan nama defect type');
+        //     }
+        // }
 
-    public function submitDefectArea()
-    {
-        if ($this->defectAreaAdd) {
+        // public function submitDefectArea()
+        // {
+        //     if ($this->defectAreaAdd) {
 
-            $createDefectArea = DefectArea::create([
-                'defect_area' => $this->defectAreaAdd,
-            ]);
+        //         $createDefectArea = DefectArea::create([
+        //             'defect_area' => $this->defectAreaAdd,
+        //         ]);
 
-            if ($createDefectArea) {
-                $this->emit('alert', 'success', 'Defect area : '.$this->defectAreaAdd.' berhasil ditambahkan.');
+        //         if ($createDefectArea) {
+        //             $this->emit('alert', 'success', 'Defect area : '.$this->defectAreaAdd.' berhasil ditambahkan.');
 
-                $this->defectAreaAdd = null;
-            } else {
-                $this->emit('alert', 'error', 'Terjadi kesalahan.');
-            }
-        } else {
-            $this->emit('alert', 'error', 'Harap tentukan nama defect area');
-        }
-    }
+        //             $this->defectAreaAdd = null;
+        //         } else {
+        //             $this->emit('alert', 'error', 'Terjadi kesalahan.');
+        //         }
+        //     } else {
+        //         $this->emit('alert', 'error', 'Harap tentukan nama defect area');
+        //     }
+        // }
 
     public function clearInput()
     {
@@ -323,8 +312,8 @@ class Defect extends Component
             ]);
 
             if ($insertDefect) {
-                $type = DefectType::select('defect_type')->find($this->defectType);
-                $area = DefectArea::select('defect_area')->find($this->defectArea);
+                $type = DB::table('output_defect_types')->select('defect_type')->find($this->defectType);
+                $area = DB::table('output_defect_areas')->select('defect_area')->find($this->defectArea);
                 $getSize = DB::table('so_det')
                     ->select('id', 'size')
                     ->where('id', $this->sizeInput)
@@ -456,28 +445,17 @@ class Defect extends Component
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
 
-        // Get total output
-        $this->output = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'defect')->
-            count();
+        // Defect types
+        // $this->productTypes = DB::table('output_product_types')->orderBy('product_type')->get();
 
         // Defect types
-        $this->productTypes = ProductType::orderBy('product_type')->get();
-
-        // Defect types
-        $this->defectTypes = DefectType::orderBy('defect_type')->get();
+        $this->defectTypes = DB::table('output_defect_types')->orderBy('defect_type')->get();
 
         // Defect areas
-        $this->defectAreas = DefectArea::orderBy('defect_area')->get();
+        $this->defectAreas = DB::table('output_defect_areas')->orderBy('defect_area')->get();
 
         // Defect
-        $this->defect = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'defect')->
-            get();
+        $this->defect = collect(DB::select("select output_defects_packing.*, so_det.size, COUNT(output_defects_packing.id) output from `output_defects_packing` left join `so_det` on `so_det`.`id` = `output_defects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `defect_status` = 'defect' group by so_det.id"));
 
         return view('livewire.defect');
     }

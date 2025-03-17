@@ -1,4 +1,4 @@
-<div wire:poll.visible.30000ms>
+<div>
     <div class="loading-container-fullscreen" wire:loading wire:target="toRft, toDefect, toDefectHistory, toReject, toRework, toProductionPanel, preSubmitUndo, submitUndo, updateOrder, toProductionPanel, setAndSubmitInput, submitInput">
         <div class="loading-container">
             <div class="loading"></div>
@@ -183,9 +183,11 @@
         {{-- @endif --}}
 
         {{-- Rework --}}
+        {{-- @if ($rework) --}}
         <div class="{{ $rework ? '' : 'd-none' }}">
             @livewire('rework', ["orderWsDetailSizes" => $orderWsDetailSizes])
         </div>
+        {{-- @endif --}}
 
         {{-- Undo --}}
         <div class="modal" tabindex="-1" id="undo-modal" wire:ignore.self>
