@@ -449,10 +449,10 @@ class Defect extends Component
         // $this->productTypes = DB::table('output_product_types')->orderBy('product_type')->get();
 
         // Defect types
-        $this->defectTypes = DB::table('output_defect_types')->orderBy('defect_type')->get();
+        $this->defectTypes = DB::table('output_defect_types')->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_type')->get();
 
         // Defect areas
-        $this->defectAreas = DB::table('output_defect_areas')->orderBy('defect_area')->get();
+        $this->defectAreas = DB::table('output_defect_areas')->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_area')->get();
 
         // Defect
         $this->defect = collect(DB::select("select output_defects_packing.*, so_det.size, COUNT(output_defects_packing.id) output from `output_defects_packing` left join `so_det` on `so_det`.`id` = `output_defects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `defect_status` = 'defect' group by so_det.id"));
