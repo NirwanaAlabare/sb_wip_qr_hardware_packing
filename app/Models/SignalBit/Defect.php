@@ -28,7 +28,9 @@ class Defect extends Model
         'status',
         'created_at',
         'updated_at',
+        'reworked_at',
         'created_by',
+        'reworked_by',
     ];
 
     public function masterPlan()

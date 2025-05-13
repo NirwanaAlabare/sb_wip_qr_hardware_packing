@@ -185,7 +185,7 @@ class Rework extends Component
                 $createRework = ReworkModel::create([
                     "defect_id" => $defect->id,
                     "status" => "NORMAL",
-                    'created_by' => Auth::user()->id
+                    'created_by' => Auth::user()->username
                 ]);
 
                 // add rft array
@@ -217,7 +217,9 @@ class Rework extends Component
             }
             // update defect
             $updateDefect = Defect::where('master_plan_id', $this->orderInfo->id)->update([
-                "defect_status" => "reworked"
+                "defect_status" => "reworked",
+                "reworked_by" => Auth::user()->username,
+                "reworked_at" => Carbon::now()
             ]);
 
             // create rft
@@ -267,7 +269,9 @@ class Rework extends Component
 
                 // update defect
                 $defectSql = Defect::where('id', $defect->id)->update([
-                    "defect_status" => "reworked"
+                    "defect_status" => "reworked",
+                    "reworked_by" => Auth::user()->username,
+                    "reworked_at" => Carbon::now()
                 ]);
 
                 // create rft
@@ -319,6 +323,8 @@ class Rework extends Component
             // remove from defect
             $defect = Defect::where('id', $defectId)->first();
             $defect->defect_status = "reworked";
+            $defect->reworked_by = Auth::user()->username;
+            $defect->reworked_at = Carbon::now();
             $defect->save();
 
             // add to rft
@@ -361,6 +367,8 @@ class Rework extends Component
         // add to defect
         $defect = Defect::where('id', $defectId)->first();
         $defect->defect_status = 'defect';
+        $defect->reworked_by = Auth::user()->username;
+        $defect->reworked_at = Carbon::now();
         $defect->save();
 
         // delete from rft
@@ -414,6 +422,8 @@ class Rework extends Component
 
             // remove from defect
             $scannedDefectData->defect_status = "reworked";
+            $scannedDefectData->reworked_by = Auth::user()->username;
+            $scannedDefectData->reworked_at = Carbon::now();
             $scannedDefectData->save();
 
             // add to rft
@@ -534,7 +544,11 @@ class Rework extends Component
             }
         }
 
-        $rapidDefectUpdate = Defect::whereIn('id', $defectIds)->update(["defect_status" => "reworked"]);
+        $rapidDefectUpdate = Defect::whereIn('id', $defectIds)->update([
+            "defect_status" => "reworked",
+            "reworked_by" => Auth::user()->username,
+            "reworked_at" => Carbon::now(),
+        ]);
         $rapidRftInsert = Rft::insert($rftData);
         $rapidRftInsertNds = OutputPacking::insert($rftDataNds);
 
