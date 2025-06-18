@@ -185,7 +185,7 @@ class Rework extends Component
                 $createRework = ReworkModel::create([
                     "defect_id" => $defect->id,
                     "status" => "NORMAL",
-                    'created_by' => Auth::user()->id
+                    'created_by' => Auth::user()->username
                 ]);
 
                 // add rft array

@@ -185,7 +185,7 @@ class ReworkUniversal extends Component
                 $createRework = ReworkModel::create([
                     "defect_id" => $defect->id,
                     "status" => "NORMAL",
-                    "created_by" => Auth::user()->id
+                    "created_by" => Auth::user()->username
                 ]);
 
                 // add rft array
@@ -196,7 +196,7 @@ class ReworkUniversal extends Component
                     'so_det_id' => $defect->so_det_id,
                     "status" => "REWORK",
                     "rework_id" => $createRework->id,
-                    'created_by' => Auth::user()->id,
+                    'created_by' => Auth::user()->username,
                     "created_at" => Carbon::now(),
                     "updated_at" => Carbon::now()
                 ]);

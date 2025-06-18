@@ -330,7 +330,7 @@ class Reject extends Component
                     'reject_status' => $scannedDefectData ? 'defect' : 'mati',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
-                    'created_by' => Auth::user()->id,
+                    'created_by' => Auth::user()->username,
                 ]);
 
                 if ($insertReject) {
@@ -438,7 +438,7 @@ class Reject extends Component
                         'status' => 'NORMAL',
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
-                        'created_by' => Auth::user()->id
+                        'created_by' => Auth::user()->username,
                     ]);
 
                     $success += 1;
@@ -528,7 +528,7 @@ class Reject extends Component
                         "reject_status" => "defect",
                         "kode_numbering" => $defect->kode_numbering,
                         "no_cut_size" => $defect->no_cut_size,
-                        'created_by' => Auth::user()->id
+                        'created_by' =>Auth::user()->username
                     ]);
 
                     // add defect ids
@@ -602,7 +602,7 @@ class Reject extends Component
                         "reject_status" => "defect",
                         "kode_numbering" => $defect->kode_numbering,
                         "no_cut_size" => $defect->no_cut_size,
-                        'created_by' => Auth::user()->id
+                        'created_by' =>Auth::user()->username,
                     ]);
 
                     // add defect id array
@@ -664,7 +664,7 @@ class Reject extends Component
                     "reject_status" => 'defect',
                     "kode_numbering" => $getDefect->kode_numbering,
                     "no_cut_size" => $getDefect->no_cut_size,
-                    'created_by' => Auth::user()->id,
+                    'created_by' =>Auth::user()->username,
                     "status" => "NORMAL"
                 ]);
 
