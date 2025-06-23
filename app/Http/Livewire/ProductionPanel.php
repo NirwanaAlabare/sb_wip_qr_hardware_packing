@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
+use App\Models\SignalBit\MasterPlan;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\DefectType;
@@ -119,6 +120,7 @@ class ProductionPanel extends Component
 
         $this->orderWsDetailSizes = DB::table('master_plan')->selectRaw("
                 MIN(so_det.id) as so_det_id,
+                so_det.color as color,
                 so_det.size as size,
                 so_det.dest as dest,
                 CONCAT(so_det.size, (CASE WHEN so_det.dest != '-' OR so_det.dest IS NULL THEN CONCAT('-', so_det.dest) ELSE '' END)) as size_dest
@@ -363,7 +365,7 @@ class ProductionPanel extends Component
 
         $this->selectedSize = 'all';
 
-        $this->orderInfo = DB::table("master_plan")->selectRaw("
+        $this->orderInfo = MasterPlan::selectRaw("
                 master_plan.id as id,
                 master_plan.tgl_plan as tgl_plan,
                 REPLACE(master_plan.sewing_line, '_', ' ') as sewing_line,
@@ -417,6 +419,7 @@ class ProductionPanel extends Component
 
         $this->orderWsDetailSizes = DB::table('master_plan')->selectRaw("
                 MIN(so_det.id) as so_det_id,
+                so_det.color as color,
                 so_det.size as size,
                 so_det.dest as dest,
                 CONCAT(so_det.size, (CASE WHEN so_det.dest != '-' OR so_det.dest IS NULL THEN CONCAT('-', so_det.dest) ELSE '' END)) as size_dest

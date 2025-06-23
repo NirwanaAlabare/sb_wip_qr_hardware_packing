@@ -288,11 +288,7 @@ class Rft extends Component
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
 
         // Rft
-        $this->rft = DB::connection('mysql_sb')->table('output_rfts_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_rfts_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('status', 'NORMAL')->
-            get();
+        $this->rft = collect(DB::select("select output_rfts_packing.*, so_det.size, COUNT(output_rfts_packing.id) output from `output_rfts_packing` left join `so_det` on `so_det`.`id` = `output_rfts_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `status` = 'NORMAL' group by so_det.id"));
 
         return view('livewire.rft');
     }

@@ -108,11 +108,7 @@ class Rework extends Component
 
     public function updateOutput()
     {
-        $this->rework = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'reworked')->
-            get();
+        $this->rework = collect(DB::select("select output_defects_packing.*, so_det.size, COUNT(output_defects_packing.id) output from `output_defects_packing` left join `so_det` on `so_det`.`id` = `output_defects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `defect_status` = 'reworked' group by so_det.id"));
     }
 
     public function loadReworkPage()
@@ -189,7 +185,7 @@ class Rework extends Component
                 $createRework = ReworkModel::create([
                     "defect_id" => $defect->id,
                     "status" => "NORMAL",
-                    'created_by' => Auth::user()->id
+                    'created_by' => Auth::user()->username
                 ]);
 
                 // add rft array
@@ -623,11 +619,7 @@ class Rework extends Component
             where('output_defects_packing.defect_area_id', $this->massDefectArea)->
             groupBy('output_defects_packing.so_det_id', 'so_det.size')->get();
 
-        $this->rework = DB::connection('mysql_sb')->table('output_defects_packing')->
-            leftJoin("so_det", "so_det.id", "=", "output_defects_packing.so_det_id")->
-            where('master_plan_id', $this->orderInfo->id)->
-            where('defect_status', 'reworked')->
-            get();
+        $this->rework = collect(DB::select("select output_defects_packing.*, so_det.size, COUNT(output_defects_packing.id) output from `output_defects_packing` left join `so_det` on `so_det`.`id` = `output_defects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `defect_status` = 'reworked' group by so_det.id"));
 
         return view('livewire.rework' , ['defects' => $defects, 'reworks' => $reworks, 'allDefectList' => $allDefectList]);
     }

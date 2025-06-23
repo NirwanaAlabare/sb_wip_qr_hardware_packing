@@ -147,11 +147,7 @@ class Reject extends Component
     public function updateOutput()
     {
         // Reject
-        $this->reject = RejectModel::
-            selectRaw('output_rejects_packing.*, so_det.size')->
-            leftJoin('so_det', 'so_det.id', '=', 'output_rejects_packing.so_det_id')->
-            where('master_plan_id', $this->orderInfo->id)->
-            get();
+        $this->reject = collect(DB::select("select output_rejects_packing.*, so_det.size, COUNT(output_rejects_packing.id) output from `output_rejects_packing` left join `so_det` on `so_det`.`id` = `output_rejects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `status` = 'NORMAL' group by so_det.id"));
     }
 
     public function clearInput()
@@ -339,7 +335,7 @@ class Reject extends Component
                     'reject_status' => $scannedDefectData ? 'defect' : 'mati',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
-                    'created_by' => Auth::user()->id,
+                    'created_by' => Auth::user()->username,
                 ]);
 
                 if ($insertReject) {
@@ -447,7 +443,7 @@ class Reject extends Component
                         'status' => 'NORMAL',
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
-                        'created_by' => Auth::user()->id
+                        'created_by' => Auth::user()->username,
                     ]);
 
                     $success += 1;
@@ -537,7 +533,7 @@ class Reject extends Component
                         "reject_status" => "defect",
                         "kode_numbering" => $defect->kode_numbering,
                         "no_cut_size" => $defect->no_cut_size,
-                        'created_by' => Auth::user()->id
+                        'created_by' =>Auth::user()->username
                     ]);
 
                     // add defect ids
@@ -611,7 +607,7 @@ class Reject extends Component
                         "reject_status" => "defect",
                         "kode_numbering" => $defect->kode_numbering,
                         "no_cut_size" => $defect->no_cut_size,
-                        'created_by' => Auth::user()->id
+                        'created_by' =>Auth::user()->username,
                     ]);
 
                     // add defect id array
@@ -673,7 +669,7 @@ class Reject extends Component
                     "reject_status" => 'defect',
                     "kode_numbering" => $getDefect->kode_numbering,
                     "no_cut_size" => $getDefect->no_cut_size,
-                    'created_by' => Auth::user()->id,
+                    'created_by' =>Auth::user()->username,
                     "status" => "NORMAL"
                 ]);
 
@@ -720,13 +716,6 @@ class Reject extends Component
 
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
-
-        // Reject
-        $this->reject = DB::connection('mysql_sb')->table('output_rejects_packing')->
-            selectRaw('output_rejects_packing.*, so_det.size')->
-            leftJoin('so_det', 'so_det.id', '=', 'output_rejects_packing.so_det_id')->
-            where('master_plan_id', $this->orderInfo->id)->
-            get();
 
         $this->allDefectImage = MasterPlan::select('gambar')->find($this->orderInfo->id);
 
@@ -793,6 +782,9 @@ class Reject extends Component
 
         // Defect areas
         $this->defectAreas = DB::table("output_defect_areas")->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_area')->get();
+
+        // Reject
+        $this->reject = collect(DB::select("select output_rejects_packing.*, so_det.size, COUNT(output_rejects_packing.id) output from `output_rejects_packing` left join `so_det` on `so_det`.`id` = `output_rejects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `status` = 'NORMAL' group by so_det.id"));
 
         return view('livewire.reject', ['defects' => $defects, 'rejects' => $rejects, 'allDefectList' => $allDefectList]);
     }
