@@ -304,7 +304,12 @@ class Reject extends Component
                     $scannedDefectData->defect_status = "rejected";
                     $scannedDefectData->save();
 
-                    $continue = true;
+                    $currentData = $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->first();
+                    if ($currentData && $this->orderInfo && ($currentData['color'] == $this->orderInfo->color)) {
+                        $continue = true;
+                    } else {
+                        $continue = false;
+                    }
                 } else {
                     $continue = false;
                 }

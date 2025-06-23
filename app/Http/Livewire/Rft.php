@@ -130,7 +130,8 @@ class Rft extends Component
                 // $endlineOutputData = true;
 
                 if ($endlineOutputData) {
-                    if ($this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
+                    $currentData = $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->first();
+                    if ($currentData && $this->orderInfo && ($currentData['color'] == $this->orderInfo->color)) {
                         $insertRft = RftModel::create([
                             'master_plan_id' => $this->orderInfo->id,
                             'so_det_id' => $this->sizeInput,
@@ -168,7 +169,7 @@ class Rft extends Component
                         $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
                     }
                 } else {
-                    $this->emit('alert', 'error', "Output tidak ditemukan dari QC.");
+                    $this->emit('alert', 'error', "Output dari <b>QC</b> tidak ditemukan.");
                 }
             } else {
                 $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
