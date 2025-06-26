@@ -172,51 +172,69 @@ class Rework extends Component
     }
 
     public function submitAllRework() {
-        $allDefect = DB::connection('mysql_sb')->table('output_defects_packing')->selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_defects_packing.kode_numbering, output_defects_packing.no_cut_size, output_defects_packing.so_det_id so_det_id')->
+        $availableRework = 0;
+        $externalRework = 0;
+
+        $allDefect = DB::connection('mysql_sb')->table('output_defects_packing')->selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_defects_packing.kode_numbering, output_defects_packing.no_cut_size, output_defects_packing.so_det_id so_det_id, output_defect_in_out.status in_out_status')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
+            leftJoin("output_defect_in_out", function ($join) {
+                $join->on("output_defect_in_out.defect_id", "=", "output_defects_packing.id");
+                $join->on("output_defect_in_out.output_type", "=", DB::raw("'packing'"));
+            })->
             where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->get();
 
         if ($allDefect->count() > 0) {
+            $defectIds = [];
             $rftArray = [];
             $rftArrayNds = [];
             foreach ($allDefect as $defect) {
-                // create rework
-                $createRework = ReworkModel::create([
-                    "defect_id" => $defect->id,
-                    "status" => "NORMAL",
-                    'created_by' => Auth::user()->username
-                ]);
+                if ($defect->in_out_status != "defect") {
+                    // create rework
+                    $createRework = ReworkModel::create([
+                        "defect_id" => $defect->id,
+                        "status" => "NORMAL",
+                        'created_by' => Auth::user()->username
+                    ]);
 
-                // add rft array
-                array_push($rftArray, [
-                    'master_plan_id' => $defect->master_plan_id,
-                    'no_cut_size' => $defect->no_cut_size,
-                    'kode_numbering' => $defect->kode_numbering,
-                    'so_det_id' => $defect->so_det_id,
-                    'status' => "REWORK",
-                    'rework_id' => $createRework->id,
-                    'created_by' => Auth::user()->username,
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
-                ]);
+                    // add defect ids
+                    array_push($defectIds, $defect->id);
 
-                // add rft array nds
-                array_push($rftArrayNds, [
-                    'sewing_line' => $this->orderInfo->sewing_line,
-                    'master_plan_id' => $defect->master_plan_id,
-                    'no_cut_size' => $defect->no_cut_size,
-                    'kode_numbering' => $defect->kode_numbering,
-                    'so_det_id' => $defect->so_det_id,
-                    'status' => "REWORK",
-                    'rework_id' => $createRework->id,
-                    'created_by' => Auth::user()->username,
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
-                ]);
+                    // add rft array
+                    array_push($rftArray, [
+                        'master_plan_id' => $defect->master_plan_id,
+                        'no_cut_size' => $defect->no_cut_size,
+                        'kode_numbering' => $defect->kode_numbering,
+                        'so_det_id' => $defect->so_det_id,
+                        'status' => "REWORK",
+                        'rework_id' => $createRework->id,
+                        'created_by' => Auth::user()->username,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+
+                    // add rft array nds
+                    array_push($rftArrayNds, [
+                        'sewing_line' => $this->orderInfo->sewing_line,
+                        'master_plan_id' => $defect->master_plan_id,
+                        'no_cut_size' => $defect->no_cut_size,
+                        'kode_numbering' => $defect->kode_numbering,
+                        'so_det_id' => $defect->so_det_id,
+                        'status' => "REWORK",
+                        'rework_id' => $createRework->id,
+                        'created_by' => Auth::user()->username,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+
+                    $availableRework += 1;
+                } else {
+                    $externalRework += 1;
+                }
             }
+
             // update defect
-            $updateDefect = Defect::where('master_plan_id', $this->orderInfo->id)->update([
+            $updateDefect = Defect::whereIn("id", $defectIds)->update([
                 "defect_status" => "reworked"
             ]);
 
@@ -226,10 +244,16 @@ class Rework extends Component
             // create rft nds
             $createRftNds = OutputPacking::insert($rftArrayNds);
 
-            if ($allDefect->count() > 0) {
-                $this->emit('alert', 'success', "Semua DEFECT berhasil di REWORK");
+            if ($availableRework > 0) {
+                $this->emit('alert', 'success', $availableRework." DEFECT berhasil di REWORK");
+
+                // $this->emit('triggerDashboard', Auth::user()->line->username, Carbon::now()->format('Y-m-d'));
             } else {
                 $this->emit('alert', 'error', "Terjadi kesalahan. DEFECT tidak berhasil di REWORK.");
+            }
+
+            if ($externalRework > 0) {
+                $this->emit('alert', 'warning', $externalRework." DEFECT masih di proses MENDING/SPOTCLEANING.");
             }
         } else {
             $this->emit('alert', 'warning', "Data tidak ditemukan.");
@@ -248,7 +272,16 @@ class Rework extends Component
     }
 
     public function submitMassRework() {
-        $selectedDefect = DB::table('output_defects_packing')->selectRaw('output_defects_packing.*, so_det.size as size')->
+        $availableRework = 0;
+        $externalRework = 0;
+
+        $selectedDefect = DB::table('output_defects_packing')->
+            selectRaw('output_defects_packing.*, so_det.size as size, output_defect_in_out.status in_out_status')->
+            leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
+            leftJoin("output_defect_in_out", function ($join) {
+                $join->on("output_defect_in_out.defect_id", "=", "output_defects_packing.id");
+                $join->on("output_defect_in_out.output_type", "=", DB::raw("'packing'"));
+            })->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             where('output_defects_packing.defect_status', 'defect')->
             where('output_defects_packing.master_plan_id', $this->orderInfo->id)->
@@ -259,47 +292,56 @@ class Rework extends Component
 
         if ($selectedDefect->count() > 0) {
             foreach ($selectedDefect as $defect) {
-                // create rework
-                $createRework = ReworkModel::create([
-                    "defect_id" => $defect->id,
-                    "status" => "NORMAL"
-                ]);
+                if ($defect->in_out_status != "defect") {
+                    // create rework
+                    $createRework = ReworkModel::create([
+                        "defect_id" => $defect->id,
+                        "status" => "NORMAL"
+                    ]);
 
-                // update defect
-                $defectSql = Defect::where('id', $defect->id)->update([
-                    "defect_status" => "reworked"
-                ]);
+                    // update defect
+                    $defectSql = Defect::where('id', $defect->id)->update([
+                        "defect_status" => "reworked"
+                    ]);
 
-                // create rft
-                $createRft = Rft::create([
-                    'master_plan_id' => $defect->master_plan_id,
-                    'no_cut_size' => $defect->no_cut_size,
-                    'kode_numbering' => $defect->kode_numbering,
-                    'so_det_id' => $defect->so_det_id,
-                    'status' => 'REWORK',
-                    'rework_id' => $createRework->id,
-                    'created_by' => Auth::user()->username,
-                ]);
+                    // create rft
+                    $createRft = Rft::create([
+                        'master_plan_id' => $defect->master_plan_id,
+                        'no_cut_size' => $defect->no_cut_size,
+                        'kode_numbering' => $defect->kode_numbering,
+                        'so_det_id' => $defect->so_det_id,
+                        'status' => 'REWORK',
+                        'rework_id' => $createRework->id,
+                        'created_by' => Auth::user()->username,
+                    ]);
 
-                // create rft nds
-                $createRftNds = OutputPacking::create([
-                    'sewing_line' => $this->orderInfo->sewing_line,
-                    'master_plan_id' => $defect->master_plan_id,
-                    'no_cut_size' => $defect->no_cut_size,
-                    'kode_numbering' => $defect->kode_numbering,
-                    'so_det_id' => $defect->so_det_id,
-                    'status' => 'REWORK',
-                    'rework_id' => $createRework->id,
-                    'created_by' => Auth::user()->username,
-                ]);
+                    // create rft nds
+                    $createRftNds = OutputPacking::create([
+                        'sewing_line' => $this->orderInfo->sewing_line,
+                        'master_plan_id' => $defect->master_plan_id,
+                        'no_cut_size' => $defect->no_cut_size,
+                        'kode_numbering' => $defect->kode_numbering,
+                        'so_det_id' => $defect->so_det_id,
+                        'status' => 'REWORK',
+                        'rework_id' => $createRework->id,
+                        'created_by' => Auth::user()->username,
+                    ]);
+                    $availableRework++;
+                } else {
+                    $externalRework++;
+                }
             }
 
-            if ($selectedDefect->count() > 0) {
+            if ($availableRework > 0) {
                 $this->emit('alert', 'success', "DEFECT dengan Ukuran : ".$selectedDefect[0]->size.", Tipe : ".$this->massDefectTypeName." dan Area : ".$this->massDefectAreaName." berhasil di REWORK sebanyak ".$selectedDefect->count()." kali.");
 
                 $this->emit('hideModal', 'massRework');
             } else {
                 $this->emit('alert', 'error', "Terjadi kesalahan. DEFECT dengan Ukuran : ".$selectedDefect[0]->size.", Tipe : ".$this->massDefectTypeName." dan Area : ".$this->massDefectAreaName." tidak berhasil di REWORK.");
+            }
+
+            if ($externalRework > 0) {
+                $this->emit('alert', 'warning', $externalRework." DEFECT masih ada yang di proses MENDING/SPOTCLEANING.");
             }
         } else {
             $this->emit('alert', 'warning', "Data tidak ditemukan.");
@@ -310,44 +352,57 @@ class Rework extends Component
         $thisDefectRework = DB::connection('mysql_sb')->table('output_reworks_packing')->where('defect_id', $defectId)->count();
 
         if ($thisDefectRework < 1) {
-            // add to rework
-            $createRework = ReworkModel::create([
-                "defect_id" => $defectId,
-                "status" => "NORMAL"
-            ]);
+            $defect = Defect::where('id', $defectId);
+            $getDefect = Defect::selectRaw('output_defects_packing.*, output_defect_in_out.status in_out_status')->
+                leftJoin("output_defect_in_out", function ($join) {
+                    $join->on("output_defect_in_out.defect_id", "=", "output_defects_packing.id");
+                    $join->on("output_defect_in_out.output_type", "=", DB::raw("'packing'"));
+                })->
+                where('output_defects_packing.id', $defectId)->
+                first();
 
-            // remove from defect
-            $defect = Defect::where('id', $defectId)->first();
-            $defect->defect_status = "reworked";
-            $defect->save();
+            if ($getDefect->in_out_status != 'defect') {
+                // add to rework
+                $createRework = ReworkModel::create([
+                    "defect_id" => $defectId,
+                    "status" => "NORMAL"
+                ]);
 
-            // add to rft
-            $createRft = Rft::create([
-                'master_plan_id' => $defect->master_plan_id,
-                'no_cut_size' => $defect->no_cut_size,
-                'kode_numbering' => $defect->kode_numbering,
-                'so_det_id' => $defect->so_det_id,
-                "status" => "REWORK",
-                "rework_id" => $createRework->id,
-                'created_by' => Auth::user()->username,
-            ]);
+                // remove from defect
+                $defect = Defect::where('id', $defectId)->first();
+                $defect->defect_status = "reworked";
+                $defect->save();
 
-            // add to rft nds
-            $createRftNds = OutputPacking::create([
-                'sewing_line' => $this->orderInfo->sewing_line,
-                'master_plan_id' => $defect->master_plan_id,
-                'no_cut_size' => $defect->no_cut_size,
-                'kode_numbering' => $defect->kode_numbering,
-                'so_det_id' => $defect->so_det_id,
-                "status" => "REWORK",
-                "rework_id" => $createRework->id,
-                'created_by' => Auth::user()->username,
-            ]);
+                // add to rft
+                $createRft = Rft::create([
+                    'master_plan_id' => $defect->master_plan_id,
+                    'no_cut_size' => $defect->no_cut_size,
+                    'kode_numbering' => $defect->kode_numbering,
+                    'so_det_id' => $defect->so_det_id,
+                    "status" => "REWORK",
+                    "rework_id" => $createRework->id,
+                    'created_by' => Auth::user()->username,
+                ]);
 
-            if ($createRework && $createRft) {
-                $this->emit('alert', 'success', "DEFECT dengan ID : ".$defectId." berhasil di REWORK.");
+                // add to rft nds
+                $createRftNds = OutputPacking::create([
+                    'sewing_line' => $this->orderInfo->sewing_line,
+                    'master_plan_id' => $defect->master_plan_id,
+                    'no_cut_size' => $defect->no_cut_size,
+                    'kode_numbering' => $defect->kode_numbering,
+                    'so_det_id' => $defect->so_det_id,
+                    "status" => "REWORK",
+                    "rework_id" => $createRework->id,
+                    'created_by' => Auth::user()->username,
+                ]);
+
+                if ($createRework && $createRft) {
+                    $this->emit('alert', 'success', "DEFECT dengan ID : ".$defectId." berhasil di REWORK.");
+                } else {
+                    $this->emit('alert', 'error', "Terjadi kesalahan. DEFECT dengan ID : ".$defectId." tidak berhasil di REWORK.");
+                }
             } else {
-                $this->emit('alert', 'error', "Terjadi kesalahan. DEFECT dengan ID : ".$defectId." tidak berhasil di REWORK.");
+                $this->emit('alert', 'error', "DEFECT ini masih di proses MENDING/SPOTCLEANING. DEFECT dengan ID : ".$defectId." tidak berhasil di REWORK.");
             }
         } else {
             $this->emit('alert', 'warning', "Pencegahan data redundant. DEFECT dengan ID : ".$defectId." sudah ada di REWORK.");
@@ -403,51 +458,67 @@ class Rework extends Component
 
         $validatedData = $this->validate();
 
-        $scannedDefectData = Defect::where("defect_status", "defect")->where("kode_numbering", $this->numberingInput)->first();
+        $scannedDefectData = Defect::selectRaw("output_defects_packing.*, output_defects_packing.master_plan_id, master_plan.sewing_line, master_plan.tgl_plan, master_plan.color, output_defect_in_out.status as in_out_status")->
+            leftJoin("output_defect_in_out", function ($join) {
+                $join->on("output_defect_in_out.defect_id", "=", "output_defects_packing.id");
+                $join->on("output_defect_in_out.output_type", "=", DB::raw("'packing'"));
+            })->
+            leftJoin("master_plan", "master_plan.id", "=", "output_defects_packing.master_plan_id")->
+            where("output_defects_packing.defect_status", "defect")->
+            where("output_defects_packing.kode_numbering", $this->numberingInput)->
+            first();
 
         if ($scannedDefectData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
-            // add to rework
-            $createRework = ReworkModel::create([
-                "defect_id" => $scannedDefectData->id,
-                "status" => "NORMAL"
-            ]);
+            if ($scannedDefectData->master_plan_id == $this->orderInfo->id) {
+                if ($scannedDefectData->in_out_status != "defect") {
+                    // add to rework
+                    $createRework = ReworkModel::create([
+                        "defect_id" => $scannedDefectData->id,
+                        "status" => "NORMAL"
+                    ]);
 
-            // remove from defect
-            $scannedDefectData->defect_status = "reworked";
-            $scannedDefectData->save();
+                    // remove from defect
+                    $scannedDefectData->defect_status = "reworked";
+                    $scannedDefectData->save();
 
-            // add to rft
-            $createRft = Rft::create([
-                'master_plan_id' => $scannedDefectData->master_plan_id,
-                'no_cut_size' => $scannedDefectData->no_cut_size,
-                'kode_numbering' => $scannedDefectData->kode_numbering,
-                'so_det_id' => $scannedDefectData->so_det_id,
-                'status' => 'REWORK',
-                'rework_id' => $createRework->id,
-                'created_by' => Auth::user()->username
-            ]);
+                    // add to rft
+                    $createRft = Rft::create([
+                        'master_plan_id' => $scannedDefectData->master_plan_id,
+                        'no_cut_size' => $scannedDefectData->no_cut_size,
+                        'kode_numbering' => $scannedDefectData->kode_numbering,
+                        'so_det_id' => $scannedDefectData->so_det_id,
+                        'status' => 'REWORK',
+                        'rework_id' => $createRework->id,
+                        'created_by' => Auth::user()->username
+                    ]);
 
-            // add to rft nds
-            $createRftNds = OutputPacking::create([
-                'sewing_line' => $this->orderInfo->sewing_line,
-                'master_plan_id' => $scannedDefectData->master_plan_id,
-                'no_cut_size' => $scannedDefectData->no_cut_size,
-                'kode_numbering' => $scannedDefectData->kode_numbering,
-                'so_det_id' => $scannedDefectData->so_det_id,
-                'status' => 'REWORK',
-                'rework_id' => $createRework->id,
-                'created_by' => Auth::user()->username
-            ]);
+                    // add to rft nds
+                    $createRftNds = OutputPacking::create([
+                        'sewing_line' => $this->orderInfo->sewing_line,
+                        'master_plan_id' => $scannedDefectData->master_plan_id,
+                        'no_cut_size' => $scannedDefectData->no_cut_size,
+                        'kode_numbering' => $scannedDefectData->kode_numbering,
+                        'so_det_id' => $scannedDefectData->so_det_id,
+                        'status' => 'REWORK',
+                        'rework_id' => $createRework->id,
+                        'created_by' => Auth::user()->username
+                    ]);
 
-            $this->sizeInput = '';
-            $this->sizeInputText = '';
-            $this->noCutInput = '';
-            $this->numberingInput = '';
+                    $this->sizeInput = '';
+                    $this->sizeInputText = '';
+                    $this->noCutInput = '';
+                    $this->numberingInput = '';
 
-            if ($createRework && $createRft) {
-                $this->emit('alert', 'success', "DEFECT dengan ID : ".$scannedDefectData->id." berhasil di REWORK.");
+                    if ($createRework && $createRft) {
+                        $this->emit('alert', 'success', "DEFECT dengan ID : ".$scannedDefectData->id." berhasil di REWORK.");
+                    } else {
+                        $this->emit('alert', 'error', "Terjadi kesalahan. DEFECT dengan ID : ".$scannedDefectData->id." tidak berhasil di REWORK.");
+                    }
+                } else {
+                    $this->emit('alert', 'error', "DEFECT dengan ID : ".$scannedDefectData->id." masih ada di MENDING/SPOTCLEANING.");
+                }
             } else {
-                $this->emit('alert', 'error', "Terjadi kesalahan. DEFECT dengan ID : ".$scannedDefectData->id." tidak berhasil di REWORK.");
+                $this->emit('alert', 'error', "Data DEFECT berada di Plan lain (<b>ID :".$scannedDefectData->master_plan_id."/".$scannedDefectData->tgl_plan."/".$scannedDefectData->color."/".strtoupper(str_replace("_", " ", $scannedDefectData->sewing_line))."</b>)");
             }
         } else {
             $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
