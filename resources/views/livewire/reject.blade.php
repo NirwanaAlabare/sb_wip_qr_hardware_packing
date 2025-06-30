@@ -96,7 +96,7 @@
                         </div>
                         <div class="col-md-7 table-responsive">
                             <div class="d-flex align-items-center gap-3 my-3">
-                                <button class="btn btn-reject fw-bold rounded-0 w-25 h-100" wire:click="$emit('preSubmitAllReject')">Reject all</button>
+                                <button class="btn btn-reject fw-bold rounded-0 w-25 h-100 disabled d-none" wire:click="$emit('preSubmitAllReject')">Reject all</button>
                                 <input type="text" class="form-control rounded-0 w-75 h-100" wire:model='allDefectListFilter' placeholder="Search defect">
                             </div>
                             <table class="table table-bordered vertical-align-center">
@@ -105,7 +105,7 @@
                                         <th>Tipe</th>
                                         <th>Area</th>
                                         <th>Total</th>
-                                        <th>Action</th>
+                                        <th class="d-none">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -126,7 +126,7 @@
                                                 <td>{{ $defectList->defect_type }}</td>
                                                 <td>{{ $defectList->defect_area }}</td>
                                                 <td><b>{{$defectList->total}}</b></td>
-                                                <td>
+                                                <td class="d-none">
                                                     <div wire:loading>
                                                         <div class="loading-small"></div>
                                                     </div>
@@ -176,7 +176,7 @@
                             <th>Defect Area</th>
                             <th>Defect Area Image</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th class="d-none">Action</th>
                         </tr>
                         @if ($defects->count() < 1)
                             <tr>
@@ -197,7 +197,7 @@
                                         </button>
                                     </td>
                                     <td class="text-defect fw-bold">{{ strtoupper($defect->defect_status) }}</td>
-                                    <td>
+                                    <td class="d-none">
                                         <div wire:loading>
                                             <div class="loading-small"></div>
                                         </div>
@@ -243,7 +243,7 @@
                             <th>Defect Area</th>
                             <th>Defect Area Image</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th class="d-none">Action</th>
                         </tr>
                         @if ($rejects->count() < 1)
                             <tr>
@@ -270,7 +270,7 @@
                                         @endif
                                     </td>
                                     <td class="text-reject fw-bold">{{ $reject->defect ? "DEFECT" : "MATI" }}</td>
-                                    <td>
+                                    <td class="d-none">
                                         <div wire:loading>
                                             <div class="loading-small"></div>
                                         </div>
