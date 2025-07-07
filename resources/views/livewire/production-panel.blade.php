@@ -334,6 +334,12 @@
             restrictYesterdayMasterPlan();
         });
 
+        window.addEventListener("focus", () => {
+            Livewire.emit('updateOrder');
+
+            restrictYesterdayMasterPlan();
+        });
+
         // Pad 2 Digits
         function pad(n) {
             return n < 10 ? '0' + n : n
