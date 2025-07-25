@@ -225,21 +225,26 @@ class Defect extends Component
         $this->defectAreaPositionY = $y;
     }
 
-    public function preSubmitInput()
+    public function preSubmitInput($value)
     {
-        if ($this->numberingInput) {
-            if (str_contains($this->numberingInput, 'WIP')) {
-                $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->numberingInput)->first();
-            } else {
-                $numberingCodes = explode('_', $this->numberingInput);
+        $numberingInput = $value;
 
-                if (count($numberingCodes) > 2) {
-                    $this->numberingInput = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
-                    $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $this->numberingInput)->first();
-                } else {
-                    $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->numberingInput)->first();
-                }
-            }
+        if ($numberingInput) {
+            // if (str_contains($numberingInput, 'WIP')) {
+            //     $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $numberingInput)->first();
+            // } else {
+            //     $numberingCodes = explode('_', $numberingInput);
+
+            //     if (count($numberingCodes) > 2) {
+            //         $numberingInput = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
+            //         $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $numberingInput)->first();
+            //     } else {
+            //         $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $numberingInput)->first();
+            //     }
+            // }
+
+            // One Straight Format
+            $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $numberingInput)->first();
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
@@ -251,7 +256,7 @@ class Defect extends Component
         $validation = Validator::make([
             'sizeInput' => $this->sizeInput,
             'noCutInput' => $this->noCutInput,
-            'numberingInput' => $this->numberingInput
+            'numberingInput' => $numberingInput
         ], [
             'sizeInput' => 'required',
             'noCutInput' => 'required',
@@ -268,7 +273,7 @@ class Defect extends Component
 
             $validation->validate();
         } else {
-            $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
+            $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $numberingInput)->first();
 
             if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
                 $this->emit('clearSelectDefectAreaPoint');
@@ -280,6 +285,8 @@ class Defect extends Component
                 $this->defectAreaPositionY = null;
 
                 $this->validateOnly('sizeInput');
+
+                $this->numberingInput = $numberingInput;
 
                 $this->emit('showModal', 'defect', 'regular');
             } else {
@@ -383,18 +390,21 @@ class Defect extends Component
         if ($this->rapidDefect && count($this->rapidDefect) > 0) {
 
             for ($i = 0; $i < count($this->rapidDefect); $i++) {
-                if (str_contains($this->rapidDefect[$i]['numberingInput'], 'WIP')) {
-                    $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->rapidDefect[$i]['numberingInput'])->first();
-                } else {
-                    $numberingCodes = explode('_', $this->rapidDefect[$i]['numberingInput']);
+                // if (str_contains($this->rapidDefect[$i]['numberingInput'], 'WIP')) {
+                //     $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->rapidDefect[$i]['numberingInput'])->first();
+                // } else {
+                //     $numberingCodes = explode('_', $this->rapidDefect[$i]['numberingInput']);
 
-                    if (count($numberingCodes) > 2) {
-                        $this->rapidDefect[$i]['numberingInput'] = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
-                        $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $this->rapidDefect[$i]['numberingInput'])->first();
-                    } else {
-                        $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->rapidDefect[$i]['numberingInput'])->first();
-                    }
-                }
+                //     if (count($numberingCodes) > 2) {
+                //         $this->rapidDefect[$i]['numberingInput'] = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
+                //         $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $this->rapidDefect[$i]['numberingInput'])->first();
+                //     } else {
+                //         $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->rapidDefect[$i]['numberingInput'])->first();
+                //     }
+                // }
+
+                // One Straight Format
+                $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $this->rapidDefect[$i]['numberingInput'])->first();
 
                 $endlineOutputCount = DB::connection('mysql_sb')->table('output_rfts')->where('kode_numbering', $this->rapidDefect[$i]['numberingInput'])->count();
 
