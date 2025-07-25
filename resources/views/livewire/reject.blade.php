@@ -541,12 +541,12 @@
         var scannedRejectItemInput = document.getElementById("scannedRejectItem");
 
         scannedRejectItemInput.addEventListener("change", async function () {
-            @this.numberingInput = this.value;
+            const value = this.value;
 
             this.setAttribute("disabled", true);
 
             // submit
-            await @this.preSubmitInput();
+            await @this.preSubmitInput(value);
 
             this.removeAttribute("disabled");
             this.value = '';

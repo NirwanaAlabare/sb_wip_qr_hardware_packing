@@ -478,12 +478,15 @@
         // }
         var scannedDefectItemInput = document.getElementById("scannedDefectItem");
 
-        scannedDefectItemInput.addEventListener("change", function () {
-            @this.numberingInput = this.value;
+        scannedDefectItemInput.addEventListener("change", async function () {
+            const value = this.value;
+
+            this.setAttribute("disabled", true);
 
             // submit
-            @this.preSubmitInput();
+            await @this.preSubmitInput(value);
 
+            this.removeAttribute("disabled");
             this.value = '';
         });
 
