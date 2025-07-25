@@ -53,7 +53,7 @@ class Defect extends Component
     protected $rules = [
         'sizeInput' => 'required',
         'noCutInput' => 'required',
-        'numberingInput' => 'required|unique:output_rfts_packing,kode_numbering|unique:output_defects_packing,kode_numbering|unique:output_rejects_packing,kode_numbering',
+        'numberingInput' => 'required',
         // 'productType' => 'required',
         'defectType' => 'required',
         'defectArea' => 'required',
@@ -65,7 +65,6 @@ class Defect extends Component
         'sizeInput.required' => 'Harap scan qr.',
         'noCutInput.required' => 'Harap scan qr.',
         'numberingInput.required' => 'Harap scan qr.',
-        'numberingInput.unique' => 'Kode qr sudah discan.',
         // 'productType.required' => 'Harap tentukan tipe produk.',
         'defectType.required' => 'Harap tentukan jenis defect.',
         'defectArea.required' => 'Harap tentukan area defect.',
@@ -109,6 +108,26 @@ class Defect extends Component
     public function resetError() {
         $this->resetValidation();
         $this->resetErrorBag();
+    }
+
+    private function checkIfNumberingExists(): bool
+    {
+        if (DB::table('output_rfts_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+            $this->addError('numberingInput', 'Kode QR sudah discan di RFT.');
+            return true;
+        }
+
+        if (DB::table('output_defects_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+            $this->addError('numberingInput', 'Kode QR sudah discan di Defect.');
+            return true;
+        }
+
+        if (DB::table('output_rejects_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+            $this->addError('numberingInput', 'Kode QR sudah discan di Reject.');
+            return true;
+        }
+
+        return false;
     }
 
     public function updateWsDetailSizes($panel)
@@ -255,13 +274,16 @@ class Defect extends Component
         ], [
             'sizeInput' => 'required',
             'noCutInput' => 'required',
-            'numberingInput' => 'required|unique:output_rfts_packing,kode_numbering|unique:output_defects_packing,kode_numbering|unique:output_rejects_packing,kode_numbering'
+            'numberingInput' => 'required'
         ], [
             'sizeInput.required' => 'Harap scan qr.',
             'noCutInput.required' => 'Harap scan qr.',
-            'numberingInput.required' => 'Harap scan qr.',
-            'numberingInput.unique' => 'Kode qr sudah discan.',
+            'numberingInput.required' => 'Harap scan qr.'
         ]);
+
+        if ($this->checkIfNumberingExists()) {
+            return;
+        }
 
         if ($validation->fails()) {
             $this->emit('qrInputFocus', 'defect');
@@ -293,6 +315,10 @@ class Defect extends Component
     public function submitInput(SessionManager $session)
     {
         $validatedData = $this->validate();
+
+        if ($this->checkIfNumberingExists()) {
+            return;
+        }
 
         $currentData = $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->first();
         if ($currentData && $this->orderInfo && ($currentData['color'] == $this->orderInfo->color)) {
@@ -437,10 +463,17 @@ class Defect extends Component
 
     public function render(SessionManager $session)
     {
-        if (isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Kode qr sudah discan.")) {
-            $this->emit('alert', 'warning', "QR sudah discan.");
-        } else if ((isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Harap scan qr.")) || (isset($this->errorBag->messages()['sizeInput']) && collect($this->errorBag->messages()['sizeInput'])->contains("Harap scan qr."))) {
-            $this->emit('alert', 'error', "Harap scan QR.");
+        // if (isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains(function ($message) {return Str::contains($message, 'Kode QR sudah discan');})) {
+        //     foreach ($this->errorBag->messages()['numberingInput'] as $message) {
+        //         $this->emit('alert', 'warning', $message);
+        //     }
+        // } else if ((isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Harap scan qr.")) || (isset($this->errorBag->messages()['sizeInput']) && collect($this->errorBag->messages()['sizeInput'])->contains("Harap scan qr."))) {
+        //     $this->emit('alert', 'error', "Harap scan QR.");
+        // }
+        if (isset($this->errorBag->messages()['numberingInput'])) {
+            foreach ($this->errorBag->messages()['numberingInput'] as $message) {
+                $this->emit('alert', 'error', $message);
+            }
         }
 
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);

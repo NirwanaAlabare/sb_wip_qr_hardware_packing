@@ -60,14 +60,13 @@ class Rework extends Component
     protected $rules = [
         'sizeInput' => 'required',
         'noCutInput' => 'required',
-        'numberingInput' => 'required|unique:output_rfts_packing,kode_numbering|unique:output_rejects_packing,kode_numbering',
+        'numberingInput' => 'required',
     ];
 
     protected $messages = [
         'sizeInput.required' => 'Harap scan qr.',
         'noCutInput.required' => 'Harap scan qr.',
         'numberingInput.required' => 'Harap scan qr.',
-        'numberingInput.unique' => 'Kode qr sudah discan.',
     ];
 
     protected $listeners = [
@@ -89,6 +88,21 @@ class Rework extends Component
     public function resetError() {
         $this->resetValidation();
         $this->resetErrorBag();
+    }
+
+    private function checkIfNumberingExists(): bool
+    {
+        if (DB::table('output_rfts_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+            $this->addError('numberingInput', 'Kode QR sudah discan di RFT.');
+            return true;
+        }
+
+        if (DB::table('output_rejects_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+            $this->addError('numberingInput', 'Kode QR sudah discan di Reject.');
+            return true;
+        }
+
+        return false;
     }
 
     public function updateWsDetailSizes($panel)
@@ -424,7 +438,7 @@ class Rework extends Component
         // delete from rft nds
         $deleteRftNds = OutputPacking::where('rework_id', $reworkId)->delete();
 
-        if ($deleteRework && $updateDefect && $deleteRft) {
+        if ($deleteRework && $defect && $deleteRft) {
             $this->emit('alert', 'success', "REWORK dengan REWORK ID : ".$reworkId." dan DEFECT ID : ".$defectId." berhasil di kembalikan ke DEFECT.");
         } else {
             $this->emit('alert', 'error', "Terjadi kesalahan. REWORK dengan REWORK ID : ".$reworkId." dan DEFECT ID : ".$defectId." tidak berhasil dikembalikan ke DEFECT.");
@@ -457,6 +471,10 @@ class Rework extends Component
         }
 
         $validatedData = $this->validate();
+
+        if ($this->checkIfNumberingExists()) {
+            return;
+        }
 
         $scannedDefectData = Defect::selectRaw("output_defects_packing.*, output_defects_packing.master_plan_id, master_plan.sewing_line, master_plan.tgl_plan, master_plan.color, output_defect_in_out.status as in_out_status")->
             leftJoin("output_defect_in_out", function ($join) {
@@ -618,10 +636,17 @@ class Rework extends Component
 
     public function render(SessionManager $session)
     {
-        if (isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Kode qr sudah discan.")) {
-            $this->emit('alert', 'warning', "QR sudah discan.");
-        } else if ((isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Harap scan qr.")) || (isset($this->errorBag->messages()['sizeInput']) && collect($this->errorBag->messages()['sizeInput'])->contains("Harap scan qr."))) {
-            $this->emit('alert', 'error', "Harap scan QR.");
+        // if (isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains(function ($message) {return Str::contains($message, 'Kode QR sudah discan');})) {
+        //     foreach ($this->errorBag->messages()['numberingInput'] as $message) {
+        //         $this->emit('alert', 'warning', $message);
+        //     }
+        // } else if ((isset($this->errorBag->messages()['numberingInput']) && collect($this->errorBag->messages()['numberingInput'])->contains("Harap scan qr.")) || (isset($this->errorBag->messages()['sizeInput']) && collect($this->errorBag->messages()['sizeInput'])->contains("Harap scan qr."))) {
+        //     $this->emit('alert', 'error', "Harap scan QR.");
+        // }
+        if (isset($this->errorBag->messages()['numberingInput'])) {
+            foreach ($this->errorBag->messages()['numberingInput'] as $message) {
+                $this->emit('alert', 'error', $message);
+            }
         }
 
         $this->emit('loadReworkPageJs');
