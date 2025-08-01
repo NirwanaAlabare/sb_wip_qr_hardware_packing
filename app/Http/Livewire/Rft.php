@@ -69,19 +69,19 @@ class Rft extends Component
         $this->resetErrorBag();
     }
 
-    private function checkIfNumberingExists(): bool
+    private function checkIfNumberingExists($numberingInput = null): bool
     {
-        if (DB::table('output_rfts_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_rfts_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di RFT.');
             return true;
         }
 
-        if (DB::table('output_defects_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_defects_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di Defect.');
             return true;
         }
 
-        if (DB::table('output_rejects_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_rejects_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di Reject.');
             return true;
         }
@@ -98,6 +98,10 @@ class Rft extends Component
 
         $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         if ($panel == 'rft') {
             $this->emit('qrInputFocus', 'rft');
@@ -151,6 +155,10 @@ class Rft extends Component
 
                 $validatedData = $this->validate();
 
+                if ($this->checkIfNumberingExists($numberingInput)) {
+                    return;
+                }
+
                 $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $numberingInput)->first();
                 // $endlineOutputData = true;
 
@@ -168,17 +176,20 @@ class Rft extends Component
                             'updated_at' => Carbon::now()
                         ]);
 
-                        $insertRftNds = OutputPacking::create([
-                            'sewing_line' => $this->orderInfo->sewing_line,
-                            'master_plan_id' => $this->orderInfo->id,
-                            'so_det_id' => $this->sizeInput,
-                            'no_cut_size' => $this->noCutInput,
-                            'kode_numbering' => $numberingInput,
-                            'status' => 'NORMAL',
-                            'created_by' => Auth::user()->username,
-                            'created_at' => Carbon::now(),
-                            'updated_at' => Carbon::now()
-                        ]);
+                        $rftNds = OutputPacking::where("kode_numbering", $numberingInput)->first();
+                        if (!$rftNds) {
+                            $insertRftNds = OutputPacking::create([
+                                'sewing_line' => $this->orderInfo->sewing_line,
+                                'master_plan_id' => $this->orderInfo->id,
+                                'so_det_id' => $this->sizeInput,
+                                'no_cut_size' => $this->noCutInput,
+                                'kode_numbering' => $numberingInput,
+                                'status' => 'NORMAL',
+                                'created_by' => Auth::user()->username,
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now()
+                            ]);
+                        }
 
                         if ($insertRft) {
                             $this->emit('alert', 'success', "1 output berukuran ".$this->sizeInputText." berhasil terekam.");
@@ -321,6 +332,11 @@ class Rft extends Component
 
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         // Rft
         $this->rft = collect(DB::select("select output_rfts_packing.*, so_det.size, COUNT(output_rfts_packing.id) output from `output_rfts_packing` left join `so_det` on `so_det`.`id` = `output_rfts_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `status` = 'NORMAL' group by so_det.id"));

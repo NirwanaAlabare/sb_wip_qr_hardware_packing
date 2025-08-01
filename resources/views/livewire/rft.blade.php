@@ -100,7 +100,7 @@
     <footer class="footer fixed-bottom py-3">
         <div class="container-fluid">
             <div class="d-flex justify-content-end">
-                <button class="btn btn-dark btn-lg ms-auto fs-3" wire:click='submitInput' {{ $submitting ? 'disabled' : ''}}>SELESAI</button>
+                <button class="btn btn-dark btn-lg ms-auto fs-3" onclick="triggerSubmit()" {{ $submitting ? 'disabled' : ''}}>SELESAI</button>
             </div>
         </div>
     </footer>
@@ -160,12 +160,12 @@
         scannedItemRftInput.addEventListener("change", async function () {
             const value = this.value;
 
-            this.setAttribute("disabled", true);
+            // this.setAttribute("disabled", true);
 
             // submit
             await @this.submitInput(value);
 
-            this.removeAttribute("disabled");
+            // this.removeAttribute("disabled");
             this.value = '';
         });
 
@@ -193,5 +193,13 @@
         // Livewire.on('fromInputPanel', () => {
         //     clearRftScan();
         // });
+
+        function triggerSubmit() {
+            if ($("#scannedItemRft").val()) {
+                $("#scannedItemRft").trigger("change");
+            } else {
+                $("#scannedItemRft").focus();
+            }
+        }
     </script>
 @endpush

@@ -90,14 +90,14 @@ class Rework extends Component
         $this->resetErrorBag();
     }
 
-    private function checkIfNumberingExists(): bool
+    private function checkIfNumberingExists($numberingInput = null): bool
     {
-        if (DB::table('output_rfts_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_rfts_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di RFT.');
             return true;
         }
 
-        if (DB::table('output_rejects_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_rejects_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di Reject.');
             return true;
         }
@@ -109,6 +109,10 @@ class Rework extends Component
     {
         $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         $this->sizeInput = null;
         $this->sizeInputText = null;
@@ -399,16 +403,19 @@ class Rework extends Component
                 ]);
 
                 // add to rft nds
-                $createRftNds = OutputPacking::create([
-                    'sewing_line' => $this->orderInfo->sewing_line,
-                    'master_plan_id' => $defect->master_plan_id,
-                    'no_cut_size' => $defect->no_cut_size,
-                    'kode_numbering' => $defect->kode_numbering,
-                    'so_det_id' => $defect->so_det_id,
-                    "status" => "REWORK",
-                    "rework_id" => $createRework->id,
-                    'created_by' => Auth::user()->username,
-                ]);
+                $rftNds = OutputPacking::where("kode_numbering", $defect->kode_numbering)->orWhere("rework_id", $createRework->id)->first();
+                if (!$rftNds) {
+                    $createRftNds = OutputPacking::create([
+                        'sewing_line' => $this->orderInfo->sewing_line,
+                        'master_plan_id' => $defect->master_plan_id,
+                        'no_cut_size' => $defect->no_cut_size,
+                        'kode_numbering' => $defect->kode_numbering,
+                        'so_det_id' => $defect->so_det_id,
+                        "status" => "REWORK",
+                        "rework_id" => $createRework->id,
+                        'created_by' => Auth::user()->username,
+                    ]);
+                }
 
                 if ($createRework && $createRft) {
                     $this->emit('alert', 'success', "DEFECT dengan ID : ".$defectId." berhasil di REWORK.");
@@ -445,37 +452,40 @@ class Rework extends Component
         }
     }
 
-    public function submitInput()
+    public function submitInput($value)
     {
-        $this->emit('renderQrScanner', 'rework');
+        $this->emit('qrInputFocus', 'rework');
 
-        if ($this->numberingInput) {
-            // if (str_contains($this->numberingInput, 'WIP')) {
-            //     $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $this->numberingInput)->first();
+        $numberingInput = $value;
+
+        if ($numberingInput) {
+            // if (str_contains($numberingInput, 'WIP')) {
+            //     $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $numberingInput)->first();
             // } else {
-            //     $numberingCodes = explode('_', $this->numberingInput);
+            //     $numberingCodes = explode('_', $numberingInput);
 
             //     if (count($numberingCodes) > 2) {
-            //         $this->numberingInput = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
-            //         $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $this->numberingInput)->first();
+            //         $numberingInput = substr($numberingCodes[0],0,4)."_".$numberingCodes[1]."_".$numberingCodes[2];
+            //         $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $numberingInput)->first();
             //     } else {
-            //         $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $this->numberingInput)->first();
+            //         $numberingData = DB::connection("mysql_nds")->table("month_count")->selectRaw("month_count.*, month_count.id_month_year no_cut_size")->where("id_month_year", $numberingInput)->first();
             //     }
             // }
 
             // One Straight Format
-                $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $this->numberingInput)->first();
+                $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $numberingInput)->first();
 
             if ($numberingData) {
                 $this->sizeInput = $numberingData->so_det_id;
                 $this->sizeInputText = $numberingData->size;
                 $this->noCutInput = $numberingData->no_cut_size;
+                $this->numberingInput = $numberingInput;
             }
         }
 
         $validatedData = $this->validate();
 
-        if ($this->checkIfNumberingExists()) {
+        if ($this->checkIfNumberingExists($numberingInput)) {
             return;
         }
 
@@ -486,7 +496,7 @@ class Rework extends Component
             })->
             leftJoin("master_plan", "master_plan.id", "=", "output_defects_packing.master_plan_id")->
             where("output_defects_packing.defect_status", "defect")->
-            where("output_defects_packing.kode_numbering", $this->numberingInput)->
+            where("output_defects_packing.kode_numbering", $numberingInput)->
             first();
 
         if ($scannedDefectData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
@@ -514,16 +524,19 @@ class Rework extends Component
                     ]);
 
                     // add to rft nds
-                    $createRftNds = OutputPacking::create([
-                        'sewing_line' => $this->orderInfo->sewing_line,
-                        'master_plan_id' => $scannedDefectData->master_plan_id,
-                        'no_cut_size' => $scannedDefectData->no_cut_size,
-                        'kode_numbering' => $scannedDefectData->kode_numbering,
-                        'so_det_id' => $scannedDefectData->so_det_id,
-                        'status' => 'REWORK',
-                        'rework_id' => $createRework->id,
-                        'created_by' => Auth::user()->username
-                    ]);
+                    $rftNds = OutputPacking::where("kode_numbering", $scannedDefectData->kode_numbering)->orWhere("rework_id", $createRework->id)->first();
+                    if (!$rftNds) {
+                        $createRftNds = OutputPacking::create([
+                            'sewing_line' => $this->orderInfo->sewing_line,
+                            'master_plan_id' => $scannedDefectData->master_plan_id,
+                            'no_cut_size' => $scannedDefectData->no_cut_size,
+                            'kode_numbering' => $scannedDefectData->kode_numbering,
+                            'so_det_id' => $scannedDefectData->so_det_id,
+                            'status' => 'REWORK',
+                            'rework_id' => $createRework->id,
+                            'created_by' => Auth::user()->username
+                        ]);
+                    }
 
                     $this->sizeInput = '';
                     $this->sizeInputText = '';
@@ -551,7 +564,7 @@ class Rework extends Component
         $this->sizeInput = $scannedSize;
         $this->sizeInputText = $scannedSizeText;
 
-        $this->submitInput();
+        $this->submitInput($scannedNumbering);
     }
 
     public function pushRapidRework($numberingInput, $sizeInput, $sizeInputText) {
@@ -656,6 +669,11 @@ class Rework extends Component
 
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         $this->allDefectImage = MasterPlan::select('gambar')->find($this->orderInfo->id);
 

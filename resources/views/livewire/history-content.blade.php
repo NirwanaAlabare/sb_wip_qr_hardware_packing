@@ -25,6 +25,7 @@
                     <thead>
                         <tr>
                             <th>Tanggal & Waktu</th>
+                            <th>Kode</th>
                             <th>Ukuran</th>
                             <th>Qty</th>
                         </tr>
@@ -38,6 +39,7 @@
                             @foreach ($latestRfts as $latestRft)
                                 <tr>
                                     <td>{{ $latestRft->updated_at }}</td>
+                                    <td>{{ $latestRft->kode_numbering }}</td>
                                     <td>{{ $latestRft->size }}</td>
                                     <td>{{ $latestRft->total }}</td>
                                 </tr>
@@ -52,6 +54,7 @@
                     <thead>
                         <tr>
                             <th>Tanggal & Waktu</th>
+                            <th>Kode</th>
                             <th>Ukuran</th>
                             <th>Qty</th>
                         </tr>
@@ -65,6 +68,7 @@
                             @foreach ($latestRejects as $latestReject)
                                 <tr>
                                     <td>{{ $latestReject->updated_at }}</td>
+                                    <td>{{ $latestReject->kode_numbering }}</td>
                                     <td>{{ $latestReject->size }}</td>
                                     <td>{{ $latestReject->total }}</td>
                                 </tr>
@@ -79,6 +83,7 @@
                     <thead>
                         <tr>
                             <th>Tanggal & Waktu</th>
+                            <th>Kode</th>
                             <th>Ukuran</th>
                             <th>Defect Type</th>
                             <th>Defect Area</th>
@@ -97,6 +102,7 @@
                             @foreach ($latestDefects as $latestDefect)
                                 <tr>
                                     <td>{{ $latestDefect->updated_at }}</td>
+                                    <td>{{ $latestDefect->kode_numbering }}</td>
                                     <td>{{ $latestDefect->size }}</td>
                                     <td>{{ $latestDefect->defect_type }}</td>
                                     <td>{{ $latestDefect->defect_area }}</td>
@@ -120,6 +126,7 @@
                     <thead>
                         <tr>
                             <th>Tanggal & Waktu</th>
+                            <th>Kode</th>
                             <th>Ukuran</th>
                             <th>Defect Type</th>
                             <th>Defect Area</th>
@@ -138,6 +145,7 @@
                             @foreach ($latestReworks as $latestRework)
                                 <tr>
                                     <td>{{ $latestRework->updated_at }}</td>
+                                    <td>{{ $latestRework->kode_numbering }}</td>
                                     <td>{{ $latestRework->size }}</td>
                                     <td>{{ $latestRework->defect_type }}</td>
                                     <td>{{ $latestRework->defect_area }}</td>

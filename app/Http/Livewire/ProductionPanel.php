@@ -436,6 +436,10 @@ class ProductionPanel extends Component
             ->get();
 
         $this->orderDate = $this->orderInfo->tgl_plan;
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         session()->put("orderInfo", $this->orderInfo);
         session()->put("orderWsDetails", $this->orderWsDetails);
@@ -521,6 +525,10 @@ class ProductionPanel extends Component
         $this->orderWsDetailSizes = $session->get("orderWsDetailSizes", $this->orderWsDetailSizes);
 
         $this->orderDate = $this->orderInfo->tgl_plan;
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         // Get total output
         $this->outputRft = DB::table('output_rfts_packing')->

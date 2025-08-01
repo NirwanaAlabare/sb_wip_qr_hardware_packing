@@ -5,6 +5,12 @@
         </div>
     </div>
 
+    <div class="loading-container-fullscreen d-none" id="loading">
+        <div class="loading-container">
+            <div class="loading"></div>
+        </div>
+    </div>
+
     {{-- No Connection --}}
     <div class="alert alert-danger alert-dismissible fade show" role="alert" wire:offline>
         <strong>Koneksi Terputus.</strong>
@@ -335,9 +341,19 @@
         });
 
         window.addEventListener("focus", () => {
-            Livewire.emit('updateOrder');
+            document.getElementById("loading").classList.remove("d-none");
+
+            $('#scannedItemRft').attr("disabled", true);
+            $('#scannedDefectItem').attr("disabled", true);
+            $('#scannedRejectItem').attr("disabled", true);
+            $('#scannedReworkItem').attr("disabled", true);
 
             restrictYesterdayMasterPlan();
+
+            $('#defect-modal').modal("hide");
+            $('#reject-modal').modal("hide");
+
+            Livewire.emit('updateOrder');
         });
 
         // Pad 2 Digits
@@ -428,6 +444,13 @@
             @this.set('selectedColorName', selectedColorName);
 
             @this.updateOrder();
+        });
+
+        Livewire.on('setSelectedSizeSelect2', (value) => {
+            console.log($("#product-color").val(), value)
+            if ($("#product-color").val() != value) {
+                $("#product-color").val(value).trigger("change");
+            }
         });
     </script>
 @endpush

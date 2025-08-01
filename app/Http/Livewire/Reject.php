@@ -123,14 +123,14 @@ class Reject extends Component
         $this->resetErrorBag();
     }
 
-    private function checkIfNumberingExists(): bool
+    private function checkIfNumberingExists($numberingInput = null): bool
     {
-        if (DB::table('output_rfts_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_rfts_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di RFT.');
             return true;
         }
 
-        if (DB::table('output_rejects_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_rejects_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di Reject.');
             return true;
         }
@@ -152,6 +152,10 @@ class Reject extends Component
 
         $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         if ($panel == 'reject') {
             $this->emit('qrInputFocus', 'reject');
@@ -190,6 +194,8 @@ class Reject extends Component
 
     public function preSubmitInput($value)
     {
+        $this->emit('qrInputFocus', 'reject');
+
         $numberingInput = $value;
 
         if ($numberingInput) {
@@ -227,19 +233,21 @@ class Reject extends Component
                 $this->rejectAreaPositionX = $scannedDefectData->defect_area_x;
                 $this->rejectAreaPositionY = $scannedDefectData->defect_area_y;
 
+                $this->numberingInput = $numberingInput;
+
                 $this->emit('loadingStart');
 
                 $this->emitSelf('submitInputReject');
             } else {
                 $this->emit('qrInputFocus', 'reject');
 
-                $this->emit('alert', 'warning', "Kode qr sudah discan.");
+                $this->emit('alert', 'warning', "Kode qr sudah discan di REWORK.");
             }
         } else {
             $validation = Validator::make([
                 'sizeInput' => $this->sizeInput,
                 'noCutInput' => $this->noCutInput,
-                'numberingInput' => $this->numberingInput
+                'numberingInput' => $numberingInput
             ], [
                 'sizeInput' => 'required',
                 'noCutInput' => 'required',
@@ -250,7 +258,7 @@ class Reject extends Component
                 'numberingInput.required' => 'Harap scan qr.',
             ]);
 
-            if ($this->checkIfNumberingExists()) {
+            if ($this->checkIfNumberingExists($numberingInput)) {
                 return;
             }
 
@@ -259,23 +267,29 @@ class Reject extends Component
 
                 $validation->validate();
             } else {
-                $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
+                $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $numberingInput)->first();
 
-                if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
-                    $this->emit('clearSelectDefectAreaPoint');
+                if ($endlineOutputData) {
+                    if ($this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
+                        $this->emit('clearSelectRejectAreaPoint');
 
-                    $this->rejectType = null;
-                    $this->rejectArea = null;
-                    $this->rejectAreaPositionX = null;
-                    $this->rejectAreaPositionY = null;
+                        $this->rejectType = null;
+                        $this->rejectArea = null;
+                        $this->rejectAreaPositionX = null;
+                        $this->rejectAreaPositionY = null;
 
-                    $this->validateOnly('sizeInput');
+                        $this->numberingInput = $numberingInput;
 
-                    $this->emit('showModal', 'reject', 'regular');
+                        $this->validateOnly('sizeInput');
+
+                        $this->emit('showModal', 'reject', 'regular');
+                    } else {
+                        $this->emit('qrInputFocus', 'reject');
+
+                        $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
+                    }
                 } else {
-                    $this->emit('qrInputFocus', 'reject');
-
-                    $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
+                    $this->emit('alert', 'error', "Output dari <b>QC</b> tidak ditemukan.");
                 }
             }
         }
@@ -395,7 +409,7 @@ class Reject extends Component
         $this->sizeInput = $scannedSize;
         $this->sizeInputText = $scannedSizeText;
 
-        $this->preSubmitInput();
+        $this->preSubmitInput($scannedNumbering);
     }
 
     public function pushRapidReject($numberingInput, $sizeInput, $sizeInputText) {
@@ -757,6 +771,11 @@ class Reject extends Component
 
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         $this->allDefectImage = MasterPlan::select('gambar')->find($this->orderInfo->id);
 

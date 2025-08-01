@@ -51,6 +51,7 @@ class HistoryContent extends Component
         // "));
 
         $latestOutputRfts = DB::table('output_rfts_packing')->selectRaw('
+                output_rfts_packing.kode_numbering,
                 output_rfts_packing.updated_at,
                 so_det.size as size,
                 count(output_rfts_packing.id) as total
@@ -72,6 +73,7 @@ class HistoryContent extends Component
             limit("5")->get();
 
         $latestOutputDefects = DB::table('output_defects_packing')->selectRaw('
+                output_defects_packing.kode_numbering,
                 output_defects_packing.updated_at,
                 output_defect_types.defect_type,
                 output_defect_areas.defect_area,
@@ -107,7 +109,7 @@ class HistoryContent extends Component
             orderBy("output_defects_packing.created_at", "desc")->
             limit("5")->get();
 
-        $latestOutputRejects = DB::table('output_rejects_packing')->selectRaw('output_rejects_packing.updated_at, so_det.size as size, count(*) as total')->
+        $latestOutputRejects = DB::table('output_rejects_packing')->selectRaw('output_rejects_packing.kode_numbering, output_rejects_packing.updated_at, so_det.size as size, count(*) as total')->
             leftJoin('master_plan', 'master_plan.id', '=', 'output_rejects_packing.master_plan_id')->
             leftJoin('so_det', 'so_det.id', '=', 'output_rejects_packing.so_det_id')->
             where('master_plan.sewing_line', Auth::user()->username);
@@ -125,6 +127,7 @@ class HistoryContent extends Component
             limit("5")->get();
 
         $latestOutputReworks = DB::table('output_reworks_packing')->selectRaw('
+                output_defects_packing.kode_numbering,
                 output_reworks_packing.updated_at,
                 output_defect_types.defect_type,
                 output_defect_areas.defect_area,

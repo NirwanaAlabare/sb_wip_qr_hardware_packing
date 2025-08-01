@@ -366,7 +366,7 @@
     <footer class="footer fixed-bottom py-3">
         <div class="container-fluid">
             <div class="d-flex justify-content-end">
-                <button class="btn btn-dark btn-lg ms-auto fs-3" wire:click='preSubmitInput'>LANJUT</button>
+                <button class="btn btn-dark btn-lg ms-auto fs-3" onclick="triggerSubmit()">LANJUT</button>
             </div>
         </div>
     </footer>
@@ -518,5 +518,13 @@
         $('#defect-area-modal').on('hidden.bs.modal', function () {
             scannedDefectItemInput.focus();
         })
+
+        function triggerSubmit() {
+            if ($("#scannedDefectItem").val()) {
+                $("#scannedDefectItem").trigger("change");
+            } else {
+                $("#scannedDefectItem").focus();
+            }
+        }
     </script>
 @endpush

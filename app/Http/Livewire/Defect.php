@@ -110,19 +110,19 @@ class Defect extends Component
         $this->resetErrorBag();
     }
 
-    private function checkIfNumberingExists(): bool
+    private function checkIfNumberingExists($numberingInput = null): bool
     {
-        if (DB::table('output_rfts_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_rfts_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di RFT.');
             return true;
         }
 
-        if (DB::table('output_defects_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_defects_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di Defect.');
             return true;
         }
 
-        if (DB::table('output_rejects_packing')->where('kode_numbering', $this->numberingInput)->exists()) {
+        if (DB::table('output_rejects_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di Reject.');
             return true;
         }
@@ -139,6 +139,10 @@ class Defect extends Component
 
         $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         if ($panel == 'defect') {
             $this->emit('qrInputFocus', 'defect');
@@ -246,6 +250,8 @@ class Defect extends Component
 
     public function preSubmitInput($value)
     {
+        $this->emit('qrInputFocus', 'defect');
+
         $numberingInput = $value;
 
         if ($numberingInput) {
@@ -269,6 +275,7 @@ class Defect extends Component
                 $this->sizeInput = $numberingData->so_det_id;
                 $this->sizeInputText = $numberingData->size;
                 $this->noCutInput = $numberingData->no_cut_size;
+                $this->numberingInput = $numberingInput;
             }
         }
 
@@ -286,7 +293,7 @@ class Defect extends Component
             'numberingInput.required' => 'Harap scan qr.'
         ]);
 
-        if ($this->checkIfNumberingExists()) {
+        if ($this->checkIfNumberingExists($numberingInput)) {
             return;
         }
 
@@ -297,24 +304,28 @@ class Defect extends Component
         } else {
             $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $numberingInput)->first();
 
-            if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
-                $this->emit('clearSelectDefectAreaPoint');
+            if ($endlineOutputData) {
+                if ($endlineOutputData && $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
+                    $this->emit('clearSelectDefectAreaPoint');
 
-                $this->defectType = null;
-                $this->defectArea = null;
-                $this->productType = null;
-                $this->defectAreaPositionX = null;
-                $this->defectAreaPositionY = null;
+                    $this->defectType = null;
+                    $this->defectArea = null;
+                    $this->productType = null;
+                    $this->defectAreaPositionX = null;
+                    $this->defectAreaPositionY = null;
 
-                $this->validateOnly('sizeInput');
+                    $this->validateOnly('sizeInput');
 
-                $this->numberingInput = $numberingInput;
+                    $this->numberingInput = $numberingInput;
 
-                $this->emit('showModal', 'defect', 'regular');
+                    $this->emit('showModal', 'defect', 'regular');
+                } else {
+                    $this->emit('qrInputFocus', 'defect');
+
+                    $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
+                }
             } else {
-                $this->emit('qrInputFocus', 'defect');
-
-                $this->emit('alert', 'error', "Terjadi kesalahan. QR tidak sesuai.");
+                $this->emit('alert', 'error', "Output dari <b>QC</b> tidak ditemukan.");
             }
         }
     }
@@ -323,22 +334,22 @@ class Defect extends Component
     {
         $validatedData = $this->validate();
 
-        if ($this->checkIfNumberingExists()) {
+        if ($this->checkIfNumberingExists($validatedData["numberingInput"])) {
             return;
         }
 
-        $currentData = $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->first();
+        $currentData = $this->orderWsDetailSizes->where('so_det_id', $validatedData["sizeInput"])->first();
         if ($currentData && $this->orderInfo && ($currentData['color'] == $this->orderInfo->color)) {
             $insertDefect = DefectModel::create([
                 'master_plan_id' => $this->orderInfo->id,
-                'no_cut_size' => $this->noCutInput,
-                'kode_numbering' => $this->numberingInput,
-                'so_det_id' => $this->sizeInput,
+                'no_cut_size' => $validatedData['noCutInput'],
+                'kode_numbering' => $validatedData['numberingInput'],
+                'so_det_id' => $validatedData['sizeInput'],
                 // 'product_type_id' => $this->productType,
-                'defect_type_id' => $this->defectType,
-                'defect_area_id' => $this->defectArea,
-                'defect_area_x' => $this->defectAreaPositionX,
-                'defect_area_y' => $this->defectAreaPositionY,
+                'defect_type_id' => $validatedData['defectType'],
+                'defect_area_id' => $validatedData['defectArea'],
+                'defect_area_x' => $validatedData['defectAreaPositionX'],
+                'defect_area_y' => $validatedData['defectAreaPositionY'],
                 'status' => 'NORMAL',
                 'created_by' => Auth::user()->username,
                 'created_at' => Carbon::now(),
@@ -375,7 +386,7 @@ class Defect extends Component
         $this->sizeInput = $scannedSize;
         $this->sizeInputText = $scannedSizeText;
 
-        $this->preSubmitInput();
+        $this->preSubmitInput($scannedNumbering);
     }
 
     public function pushRapidDefect($numberingInput, $sizeInput, $sizeInputText) {
@@ -488,6 +499,11 @@ class Defect extends Component
 
         $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
         $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+
+        $this->selectedColor = $this->orderInfo->id;
+        $this->selectedColorName = $this->orderInfo->color;
+
+        $this->emit('setSelectedSizeSelect2', $this->selectedColor);
 
         // Defect types
         // $this->productTypes = DB::table('output_product_types')->orderBy('product_type')->get();

@@ -23,6 +23,7 @@
                             <tr>
                                 <th>No.</th>
                                 <th>Tanggal & Waktu</th>
+                                <th>Kode</th>
                                 <th>Size</th>
                                 <th>Defect Type</th>
                                 <th>Defect Area</th>
@@ -44,6 +45,7 @@
                                     <tr>
                                         <td>{{ $defects->firstItem() + $loop->index }}</td>
                                         <td>{{ $defect->updated_at }}</td>
+                                        <td>{{ $defect->kode_numbering }}</td>
                                         <td>{{ $defect->so_det_size }}</td>
                                         <td>{{ $defect->defect_type }}</td>
                                         <td>{{ $defect->defect_area }}</td>

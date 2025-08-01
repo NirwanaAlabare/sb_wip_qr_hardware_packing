@@ -440,12 +440,12 @@
         var scannedReworkItemInput = document.getElementById("scannedReworkItem");
 
         scannedReworkItemInput.addEventListener("change", async function () {
-            @this.numberingInput = this.value;
+            const value = this.value;
 
             this.setAttribute("disabled", true);
 
             // submit
-            await @this.submitInput();
+            await @this.submitInput(value);
 
             this.removeAttribute("disabled");
             this.value = '';

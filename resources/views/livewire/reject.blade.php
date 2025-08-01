@@ -449,7 +449,7 @@
     <footer class="footer fixed-bottom py-3">
         <div class="container-fluid">
             <div class="d-flex justify-content-end">
-                <button class="btn btn-dark btn-lg ms-auto fs-3" wire:click='preSubmitInput'>LANJUT</button>
+                <button class="btn btn-dark btn-lg ms-auto fs-3" onclick="triggerSubmit()">LANJUT</button>
             </div>
         </div>
     </footer>
@@ -580,5 +580,13 @@
         $('#reject-area-modal').on('hidden.bs.modal', function () {
             scannedRejectItemInput.focus();
         })
+
+        function triggerSubmit() {
+            if ($("#scannedRejectItem").val()) {
+                $("#scannedRejectItem").trigger("change");
+            } else {
+                $("#scannedRejectItem").focus();
+            }
+        }
     </script>
 @endpush
