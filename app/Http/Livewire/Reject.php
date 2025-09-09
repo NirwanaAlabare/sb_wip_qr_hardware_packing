@@ -332,27 +332,31 @@ class Reject extends Component
         if ($this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->count() > 0) {
             $continue = false;
 
-            $scannedDefectData = Defect::selectRaw("output_defects_packing.*, output_defect_in_out.status in_out_status")->
+            $scannedDefectData = Defect::selectRaw("output_defects_packing.*, master_plan.sewing_line, master_plan.tgl_plan, master_plan.color, output_defect_in_out.status in_out_status")->
                 leftJoin("output_defect_in_out", function ($join) {
                     $join->on("output_defect_in_out.defect_id", "=", "output_defects_packing.id");
                     $join->on("output_defect_in_out.output_type", "=", DB::raw("'packing'"));
                 })->
+                leftJoin("master_plan", "master_plan.id", "=", "output_defects_packing.master_plan_id")->
                 where("output_defects_packing.kode_numbering", $this->numberingInput)->first();
 
             // check defect
             if ($scannedDefectData) {
-                if ($scannedDefectData->defect_status == "defect" && $scannedDefectData->master_plan_id == $this->orderInfo->id) {
-                    $scannedDefectData->defect_status = "rejected";
-                    $scannedDefectData->save();
+                if ($scannedDefectData->master_plan_id == $this->orderInfo->id) {
+                    if ($scannedDefectData->defect_status == "defect") {
+                        $scannedDefectData->defect_status = "rejected";
+                        $scannedDefectData->save();
 
-                    $currentData = $this->orderWsDetailSizes->where('so_det_id', $this->sizeInput)->first();
-                    if ($currentData && $this->orderInfo && ($currentData['color'] == $this->orderInfo->color)) {
                         $continue = true;
                     } else {
                         $continue = false;
+
+                        $this->emit('alert', 'error', "Data DEFECT sudah : <b>'".$scannedDefectData->defect_status."'</b>)");
                     }
                 } else {
                     $continue = false;
+
+                    $this->emit('alert', 'error', "Data DEFECT berada di Plan lain (<b>ID :".$scannedDefectData->master_plan_id."/".$scannedDefectData->tgl_plan."/".$scannedDefectData->color."/".strtoupper(str_replace("_", " ", $scannedDefectData->sewing_line))."</b>)");
                 }
             } else {
                 $endlineOutputData = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->numberingInput)->first();
@@ -361,6 +365,8 @@ class Reject extends Component
                     $continue = true;
                 } else {
                     $continue = false;
+
+                    $this->emit('alert', 'error', "Data tidak ditemukan di QC");
                 }
             }
 

@@ -452,5 +452,9 @@
                 $("#product-color").val(value).trigger("change");
             }
         });
+
+        Livewire.on('reloadPage', () => {
+            location.reload();
+        })
     </script>
 @endpush
