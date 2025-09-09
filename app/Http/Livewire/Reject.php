@@ -838,10 +838,10 @@ class Reject extends Component
             groupBy('output_defects_packing.so_det_id', 'so_det.size')->get();
 
         // Defect types
-        $this->defectTypes = DB::table("output_defect_types")->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_type')->get();
+        $this->defectTypes = DB::table("output_defect_types")->leftJoin(DB::raw("(select defect_type_id, count(id) total_defect from output_defects where updated_at between '".date("Y-m-d", strtotime(date("Y-m-d").' -10 days'))." 00:00:00' and '".date("Y-m-d")." 23:59:59' group by defect_type_id) as defects"), "defects.defect_type_id", "=", "output_defect_types.id")->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('total_defect', 'desc')->orderBy('defect_type')->get();
 
         // Defect areas
-        $this->defectAreas = DB::table("output_defect_areas")->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_area')->get();
+        $this->defectAreas = DB::table("output_defect_areas")->leftJoin(DB::raw("(select defect_area_id, count(id) total_defect from output_defects where updated_at between '".date("Y-m-d", strtotime(date("Y-m-d").' -10 days'))." 00:00:00' and '".date("Y-m-d")." 23:59:59' group by defect_area_id) as defects"), "defects.defect_area_id", "=", "output_defect_areas.id")->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('total_defect', 'desc')->orderBy('defect_area')->get();
 
         // Reject
         $this->reject = collect(DB::select("select output_rejects_packing.*, so_det.size, COUNT(output_rejects_packing.id) output from `output_rejects_packing` left join `so_det` on `so_det`.`id` = `output_rejects_packing`.`so_det_id` where `master_plan_id` = '".$this->orderInfo->id."' and `status` = 'NORMAL' group by so_det.id"));
