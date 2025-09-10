@@ -562,7 +562,7 @@ class Reject extends Component
         $availableReject = 0;
         $externalReject = 0;
 
-        $allDefect = Defect::selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_defects_packing.so_det_id so_det_id, output_defects_packing.kode_numbering, output_defects_packing.no_cut_size, output_defect_types.allocation, output_defect_in_out.status in_out_status')->
+        $allDefect = Defect::selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_defects_packing.so_det_id so_det_id, output_defects_packing.kode_numbering, output_defects_packing.no_cut_size, output_defect_types.allocation, output_defects_packing.defect_type_id, output_defects_packing.defect_area_id, output_defects_packing.defect_area_x, output_defects_packing.defect_area_y, output_defect_in_out.status in_out_status')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             leftJoin("output_defect_in_out", function ($join) {
                 $join->on("output_defect_in_out.defect_id", "=", "output_defects_packing.id");
@@ -585,6 +585,10 @@ class Reject extends Component
                         "defect_id" => $defect->id,
                         "status" => "NORMAL",
                         "reject_status" => "defect",
+                        'reject_type_id' => $defect->defect_type_id,
+                        'reject_area_id' => $defect->defect_area_id,
+                        'reject_area_x' => $defect->defect_area_x,
+                        'reject_area_y' => $defect->defect_area_y,
                         "kode_numbering" => $defect->kode_numbering,
                         "no_cut_size" => $defect->no_cut_size,
                         'created_by' =>Auth::user()->username
@@ -633,7 +637,7 @@ class Reject extends Component
         $availableReject = 0;
         $externalReject = 0;
 
-        $selectedDefect = Defect::selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_defects_packing.so_det_id so_det_id, output_defects_packing.kode_numbering, output_defects_packing.no_cut_size, output_defect_types.allocation, so_det.size, output_defect_in_out.status in_out_status')->
+        $selectedDefect = Defect::selectRaw('output_defects_packing.id id, output_defects_packing.master_plan_id master_plan_id, output_defects_packing.so_det_id so_det_id, output_defects_packing.kode_numbering, output_defects_packing.no_cut_size, output_defect_types.allocation, output_defects_packing.defect_type_id, output_defects_packing.defect_area_id, output_defects_packing.defect_area_x, output_defects_packing.defect_area_y, so_det.size, output_defect_in_out.status in_out_status')->
             leftJoin('so_det', 'so_det.id', '=', 'output_defects_packing.so_det_id')->
             leftJoin("output_defect_in_out", function ($join) {
                 $join->on("output_defect_in_out.defect_id", "=", "output_defects_packing.id");
@@ -659,6 +663,10 @@ class Reject extends Component
                         "defect_id" => $defect->id,
                         "status" => "NORMAL",
                         "reject_status" => "defect",
+                        'reject_type_id' => $defect->defect_type_id,
+                        'reject_area_id' => $defect->defect_area_id,
+                        'reject_area_x' => $defect->defect_area_x,
+                        'reject_area_y' => $defect->defect_area_y,
                         "kode_numbering" => $defect->kode_numbering,
                         "no_cut_size" => $defect->no_cut_size,
                         'created_by' =>Auth::user()->username,
@@ -721,6 +729,10 @@ class Reject extends Component
                     "so_det_id" => $getDefect->so_det_id,
                     "defect_id" => $defectId,
                     "reject_status" => 'defect',
+                    'reject_type_id' => $getDefect->defect_type_id,
+                    'reject_area_id' => $getDefect->defect_area_id,
+                    'reject_area_x' => $getDefect->defect_area_x,
+                    'reject_area_y' => $getDefect->defect_area_y,
                     "kode_numbering" => $getDefect->kode_numbering,
                     "no_cut_size" => $getDefect->no_cut_size,
                     'created_by' =>Auth::user()->username,
