@@ -5,8 +5,8 @@
             <input type="text" class="form-control" wire:model='search' placeholder="Search Order...">
             <button class="btn btn-sb-secondary" type="button" id="button-search-order"><i class="fa-regular fa-magnifying-glass"></i></button>
         </div>
-        <button class="btn btn-sb-secondary-outline mb-3" type="button" wire:click="preSubmitFilter" id="filter-button"><i class="fa-regular fa-filter"></i></button>
-        <a href="{{ $this->baseUrl.'/production-panel/universal/' }}" class="btn btn-sb-secondary mb-3">
+        <button class="btn btn-sb-secondary-outline mb-3 d-none" type="button" wire:click="preSubmitFilter" id="filter-button"><i class="fa-regular fa-filter"></i></button>
+        <a href="{{ $this->baseUrl.'/production-panel/universal/' }}" class="btn btn-sb-secondary mb-3 d-none">
             <i class="fa-solid fa-globe"></i>
         </a href="{{ $this->baseUrl.'/production-panel/universal/' }}">
     </div>
