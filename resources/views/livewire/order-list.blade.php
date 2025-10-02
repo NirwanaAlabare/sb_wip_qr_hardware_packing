@@ -34,7 +34,11 @@
                 <a href="{{ $this->baseUrl."/production-panel/index/".$order->id }}" class="order col-md-6 h-100">
                     <div class="card overflow-hidden h-100">
                         @if ($order->plan_date != date('Y-m-d'))
-                            <span class="{{ $this->date < date('Y-m-d') && $order->plan_date < $this->date ? 'bg-defect' : 'bg-sb-secondary' }} text-light text-center fw-bold p-1 rounded-1" style="position: absolute; width:35%; top:10%; right: -10%; transform:rotate(45deg);">BERLALU</span>
+                            @if ($order->total_defect > 0)
+                                <span class="{{ $this->date < date('Y-m-d') && $order->plan_date < $this->date ? 'bg-defect' : 'bg-sb-secondary' }} text-light text-center fw-bold p-1 rounded-1" style="position: absolute; width:35%; top:10%; right: -10%; transform:rotate(45deg);">DEFECT : {{ $order->total_defect }}</span>
+                            @else
+                                <span class="{{ $this->date < date('Y-m-d') && $order->plan_date < $this->date ? 'bg-defect' : 'bg-sb-secondary' }} text-light text-center fw-bold p-1 rounded-1" style="position: absolute; width:35%; top:10%; right: -10%; transform:rotate(45deg);">BERLALU</span>
+                            @endif
                         @endif
                         <div class="card-body justify-content-start">
                             <table class="table table-responsive mb-1">
