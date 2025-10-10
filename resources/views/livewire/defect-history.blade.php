@@ -45,7 +45,7 @@
                                     <tr>
                                         <td>{{ $defects->firstItem() + $loop->index }}</td>
                                         <td>{{ $defect->updated_at }}</td>
-                                        <td>{{ $defect->kode_numbering }}</td>
+                                        <td disabled>{{ $defect->kode_numbering }}</td>
                                         <td>{{ $defect->so_det_size }}</td>
                                         <td>{{ $defect->defect_type }}</td>
                                         <td>{{ $defect->defect_area }}</td>
