@@ -71,9 +71,11 @@
                 return false;
             };
 
-            tanggal.addEventListener("change", function() {
+            tanggal.addEventListener("change", async function() {
                 if(isChanged()) {
-                    Livewire.emit('setDate', tanggalValue);
+                    Livewire.emit("loadingStart");
+
+                    await Livewire.emit('setDate', tanggalValue);
                 }
             });
         }
