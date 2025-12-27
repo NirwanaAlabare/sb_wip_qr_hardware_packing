@@ -71,6 +71,8 @@ class OrderList extends Component
         $this->orders = $this->orders->filter(function ($item) {
             return $item['plan_date'] == $this->date;
         })->values();
+
+        $this->emit("loadingStop");
     }
 
     public function render()
