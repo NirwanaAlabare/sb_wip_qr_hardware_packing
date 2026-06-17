@@ -37,7 +37,7 @@
                             <p class="mb-1 fs-5">:</p>
                             <p id="rework-qty" class="mb-1 fs-5">{{ $rework->sum('output') }}</p>
                         </div>
-                        <button class="btn btn-dark" wire:click="$emit('preSubmitUndo', 'rework')">
+                        <button class="btn btn-dark" wire:click="$emit('preSubmitUndo', 'rework')" disabled>
                             <i class="fa-regular fa-rotate-left"></i>
                         </button>
                     </div>
