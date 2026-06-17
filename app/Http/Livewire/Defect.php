@@ -127,6 +127,26 @@ class Defect extends Component
             return true;
         }
 
+        $secondaryOut = DB::table('output_secondary_out')
+            ->where('kode_numbering', $numbering)
+            ->first();
+
+        if ($secondaryOut) {
+            if ($secondaryOut->status !== 'rft') {
+                $this->addError('numberingInput', 'Kode QR sudah discan di Finishing Proses.');
+                return true;
+            }
+        } else {
+            $secondaryInExists = DB::table('output_secondary_in')
+                ->where('kode_numbering', $numbering)
+                ->exists();
+
+            if ($secondaryInExists) {
+                $this->addError('numberingInput', 'Kode QR sudah ada di Secondary In.');
+                return true;
+            }
+        }
+
         return false;
     }
 
