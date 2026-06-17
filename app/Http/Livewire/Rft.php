@@ -87,7 +87,7 @@ class Rft extends Component
         }
 
         $secondaryOut = DB::table('output_secondary_out')
-            ->where('kode_numbering', $numbering)
+            ->where('kode_numbering', ($numberingInput ?? $this->numberingInput))
             ->first();
 
         if ($secondaryOut) {
@@ -97,7 +97,7 @@ class Rft extends Component
             }
         } else {
             $secondaryInExists = DB::table('output_secondary_in')
-                ->where('kode_numbering', $numbering)
+                ->where('kode_numbering', ($numberingInput ?? $this->numberingInput))
                 ->exists();
 
             if ($secondaryInExists) {
