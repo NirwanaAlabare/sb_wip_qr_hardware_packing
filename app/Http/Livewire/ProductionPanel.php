@@ -165,6 +165,7 @@ class ProductionPanel extends Component
     {
         $this->panels = false;
         $this->reject = !($this->reject);
+
         $this->emit('toInputPanel', 'reject');
     }
 
@@ -172,6 +173,7 @@ class ProductionPanel extends Component
     {
         $this->panels = false;
         $this->rework = !($this->rework);
+
         $this->emit('toInputPanel', 'rework');
     }
 
