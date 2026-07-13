@@ -125,6 +125,11 @@ class Reject extends Component
 
     private function checkIfNumberingExists($numberingInput = null): bool
     {
+        if (DB::table('output_rfts_packing_po_return')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
+            $this->addError('numberingInput', 'Kode QR sudah terinput.');
+            return true;
+        }
+        
         if (DB::table('output_rfts_packing')->where('kode_numbering', ($numberingInput ?? $this->numberingInput))->exists()) {
             $this->addError('numberingInput', 'Kode QR sudah discan di RFT.');
             return true;

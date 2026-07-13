@@ -261,6 +261,30 @@ class OrderList extends Component
             orWhere('tipe_output', 'rework')->
             count();
 
+        $this->return_waiting = DB::table('output_rfts_packing_po_return')
+            ->where('status', 'rft')
+            ->where('line_qc_finishing', auth()->user()->username)
+            ->count();
+
+        $this->return_defect = DB::table('output_defect_packing_po_return')
+            ->leftJoin('output_rfts_packing_po_return', 'output_rfts_packing_po_return.id', '=', 'output_defect_packing_po_return.output_rfts_packing_po_return_id')
+            ->where('output_defect_packing_po_return.defect_status', 'defect')
+            ->where('line_qc_finishing', auth()->user()->username)
+            ->count('output_defect_packing_po_return.id');
+
+        $this->return_rework = DB::table('output_defect_packing_po_return')
+            ->leftJoin('output_rfts_packing_po_return', 'output_rfts_packing_po_return.id', '=', 'output_defect_packing_po_return.output_rfts_packing_po_return_id')
+            ->where('defect_status', 'reworked')
+            ->where('line_qc_finishing', auth()->user()->username)
+            ->whereDate('output_defect_packing_po_return.reworked_at', $this->date)
+            ->count('output_defect_packing_po_return.id');
+            
+        $this->return_reject = DB::table('output_reject_packing_po_return')
+            ->leftJoin('output_rfts_packing_po_return', 'output_rfts_packing_po_return.id', '=', 'output_reject_packing_po_return.output_rfts_packing_po_return_id')
+            ->where('line_qc_finishing', auth()->user()->username)
+            ->whereDate('output_reject_packing_po_return.created_at', $this->date)
+            ->count();
+
         return view('livewire.order-list');
     }
 }

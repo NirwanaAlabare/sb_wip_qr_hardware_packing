@@ -1,9 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\PackingLineReturnController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,5 +41,15 @@ Route::middleware('auth')->group(function () {
     Route::controller(ProfileController::class)->prefix('profile')->group(function () {
         // Route::get('/{id}', 'index');
         Route::put('/update/{id}', 'update')->middleware('auth')->name('update-profile');
+    });
+
+    Route::controller(PackingLineReturnController::class)->prefix('packing-line-return')->group(function () {
+        Route::get('/waiting', 'waiting')->name('packing-line-return-waiting');
+        Route::get('/defect', 'defect')->name('packing-line-return-defect');
+        Route::get('/rework', 'rework')->name('packing-line-return-rework');
+        Route::get('/reject', 'reject')->name('packing-line-return-reject');
+        Route::get('/get-scanned-item-return-defect', 'getScannedItemReturnDefect')->name('get-scanned-item-return-defect');
+        Route::get('/get-scanned-item-return-rework', 'getScannedItemReturnRework')->name('get-scanned-item-return-rework');
+        Route::get('/get-scanned-item-return-reject', 'getScannedItemReturnReject')->name('get-scanned-item-return-reject');
     });
 });

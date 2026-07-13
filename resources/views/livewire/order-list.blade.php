@@ -27,6 +27,59 @@
     </div>
 
     <div class="order-list row row-gap-3 mb-3 h-100" wire:loading.remove wire:target='search, date'>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center fw-bold fs-5">
+                    PACKING LINE RETURN
+                </div>
+
+                <!-- Summary -->
+                <div class="col-12 px-4 pb-4">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ $this->baseUrl.'/packing-line-return/waiting' }}" class="text-decoration-none">
+                                <div class="card bg-rft text-center" style="cursor: pointer;">
+                                    <div class="card-body">
+                                        <div class="fw-bold text-light">WAITING</div>
+                                        <h3 class="mb-0 text-light">{{ $return_waiting }}</h3>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ $this->baseUrl.'/packing-line-return/defect' }}" class="text-decoration-none">
+                                <div class="card bg-defect text-center">
+                                    <div class="card-body">
+                                        <div class="fw-bold text-light">DEFECT</div>
+                                        <h3 class="mb-0 text-light">{{ $return_defect }}</h3>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ $this->baseUrl.'/packing-line-return/reject' }}" class="text-decoration-none">
+                                <div class="card bg-reject text-center">
+                                    <div class="card-body">
+                                        <div class="fw-bold text-light">REJECT</div>
+                                        <h3 class="mb-0 text-light">{{ $return_reject }}</h3>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ $this->baseUrl.'/packing-line-return/rework' }}" class="text-decoration-none">
+                                <div class="card bg-rework text-center">
+                                    <div class="card-body">
+                                        <div class="fw-bold text-light">REWORK</div>
+                                        <h3 class="mb-0 text-light">{{ $return_rework }}</h3>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         @if ($orders->isEmpty())
             {{-- <h5 class="text-center text-muted mt-3"><i class="fa-solid fa-circle-exclamation"></i> Order tidak ditemukan</h5> --}}
         @else
