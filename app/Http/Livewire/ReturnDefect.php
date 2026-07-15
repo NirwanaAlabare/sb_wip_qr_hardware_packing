@@ -52,9 +52,21 @@ class ReturnDefect extends Component
 
     public function openDefectModal($id, $masterPlanId, $soDetId)
     {
+        $this->reset([
+            'selectedId',
+            'masterPlanId',
+            'soDetId',
+            'defectType',
+            'defectArea',
+            'defectAreaPositionX',
+            'defectAreaPositionY',
+        ]);
+
         $this->selectedId = $id;
         $this->masterPlanId = $masterPlanId;
         $this->soDetId = $soDetId;
+
+        $this->emit('clearSelectDefectAreaPoint');
 
         $this->emit('showModal', 'defect');
     }
@@ -129,70 +141,6 @@ class ReturnDefect extends Component
             'productTypeImageAdd' => 'image',
         ]);
     }
-
-    // public function submitProductType()
-    // {
-    //     if ($this->productTypeAdd && $this->productTypeImageAdd) {
-
-    //         $productTypeImageAddName = md5($this->productTypeImageAdd . microtime()).'.'.$this->productTypeImageAdd->extension();
-    //         $this->productTypeImageAdd->storeAs('public/images', $productTypeImageAddName);
-
-    //         $createProductType = ProductType::create([
-    //             'product_type' => $this->productTypeAdd,
-    //             'image' => $productTypeImageAddName,
-    //         ]);
-
-    //         if ($createProductType) {
-    //             $this->emit('alert', 'success', 'Product Time : '.$this->productTypeAdd.' berhasil ditambahkan.');
-
-    //             $this->productTypeAdd = null;
-    //             $this->productTypeImageAdd = null;
-    //         } else {
-    //             $this->emit('alert', 'error', 'Terjadi kesalahan.');
-    //         }
-    //     } else {
-    //         $this->emit('alert', 'error', 'Harap tentukan nama tipe produk beserta gambarnya');
-    //     }
-    // }
-
-    // public function submitDefectType()
-    // {
-    //     if ($this->defectTypeAdd) {
-    //         $createDefectType = DefectType::create([
-    //             'defect_type' => $this->defectTypeAdd
-    //         ]);
-
-    //         if ($createDefectType) {
-    //             $this->emit('alert', 'success', 'Defect type : '.$this->defectTypeAdd.' berhasil ditambahkan.');
-
-    //             $this->defectTypeAdd = '';
-    //         } else {
-    //             $this->emit('alert', 'error', 'Terjadi kesalahan.');
-    //         }
-    //     } else {
-    //         $this->emit('alert', 'error', 'Harap tentukan nama defect type');
-    //     }
-    // }
-
-    // public function submitDefectArea()
-    // {
-    //     if ($this->defectAreaAdd) {
-
-    //         $createDefectArea = DefectArea::create([
-    //             'defect_area' => $this->defectAreaAdd,
-    //         ]);
-
-    //         if ($createDefectArea) {
-    //             $this->emit('alert', 'success', 'Defect area : '.$this->defectAreaAdd.' berhasil ditambahkan.');
-
-    //             $this->defectAreaAdd = null;
-    //         } else {
-    //             $this->emit('alert', 'error', 'Terjadi kesalahan.');
-    //         }
-    //     } else {
-    //         $this->emit('alert', 'error', 'Harap tentukan nama defect area');
-    //     }
-    // }
 
     public function clearInput()
     {
