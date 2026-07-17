@@ -38,7 +38,7 @@ class ReturnWaiting extends Component
             ->selectRaw("
                 DATE_FORMAT(created_at, '%d-%m-%Y') AS waktu,
                 created_at,
-                kode_numbering,
+                COALESCE(kode_numbering, 'MANUAL') AS kode_numbering,
                 po,
                 line_qc_finishing,
                 CONCAT(kpno, ' - ', style, ' - ', color) AS masterplan,
