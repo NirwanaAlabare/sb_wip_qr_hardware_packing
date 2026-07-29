@@ -141,31 +141,48 @@ class ReturnRework extends Component
 
     public function save()
     {
-        $exists = DB::table('output_defect_in_out')
-            ->where('defect_id', $this->idDefect)
-            ->where('output_type', 'qc_fns_pck_return')
-            ->where('status', 'reworked')
-            ->exists();
+        $data = DB::table('output_defect_packing_po_return as a')
+            ->leftJoin('output_defect_types as b', 'b.id', '=', 'a.defect_type_id')
+            ->where('a.id', $this->idDefect)
+            ->where('a.defect_status', 'defect')
+            ->select(
+                'a.*',
+                'b.allocation'
+            )
+            ->first();
 
-        if (!$exists) {
-            $this->emit(
-                'alert',
-                'warning',
-                'Defect harus melalui proses Defect In Out terlebih dahulu sebelum dapat diproses ke Rework.'
-            );
-
+        if (!$data) {
+            $this->emit('alert', 'warning', 'Data defect tidak ditemukan.');
             $this->emit('focusScanInput');
-
-            $this->reset([
-                'kode_qr',
-                'po',
-                'worksheet_style',
-                'color',
-                'size',
-                'packing_line',
-            ]);
-
+            
             return;
+        }
+
+        // Hanya allocation MENDING dan SPOTCLEANING
+        // yang wajib melalui proses Defect In Out
+        if (in_array(strtoupper($data->allocation), ['MENDING', 'SPOTCLEANING'])) {
+
+            $exists = DB::table('output_defect_in_out')
+                ->where('defect_id', $this->idDefect)
+                ->where('output_type', 'qc_fns_pck_return')
+                ->where('status', 'reworked')
+                ->exists();
+
+            if (!$exists) {
+                $this->emit('alert', 'warning', 'Defect harus melalui proses Defect In Out terlebih dahulu sebelum dapat diproses ke Rework.');
+                $this->emit('focusScanInput');
+
+                $this->reset([
+                    'kode_qr',
+                    'po',
+                    'worksheet_style',
+                    'color',
+                    'size',
+                    'packing_line',
+                ]);
+
+                return;
+            }
         }
 
         $update = DB::table('output_defect_packing_po_return')
