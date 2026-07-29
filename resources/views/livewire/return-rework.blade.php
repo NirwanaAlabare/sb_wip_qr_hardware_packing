@@ -225,8 +225,8 @@
                                     @endforeach
                                 @endif
                             </tbody>
-                        </div>
-                    </table>
+                        </table>
+                    </div>
                     <div class="mt-2">
                         {{ $summaryRework->links() }}
                     </div>
