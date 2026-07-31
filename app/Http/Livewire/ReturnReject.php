@@ -124,9 +124,12 @@ class ReturnReject extends Component
             $this->rejectArea = $data->defect_area_id;
             $this->rejectAreaPositionX = $data->defect_area_x;
             $this->rejectAreaPositionY = $data->defect_area_y;
-        }
 
-        // $this->emit('showModal', 'reject');
+            $this->submitInput(app(SessionManager::class));
+        }else{
+            $this->emit('clearSelectRejectAreaPoint');
+            $this->emit('showModal', 'reject');
+        }
 
         // $this->emit('setRejectData', [
         //     'type' => $this->rejectType,
@@ -134,8 +137,6 @@ class ReturnReject extends Component
         //     'x'    => $this->rejectAreaPositionX,
         //     'y'    => $this->rejectAreaPositionY,
         // ]);
-
-        $this->submitInput(app(SessionManager::class));
     }
 
     public function mount(SessionManager $session)
