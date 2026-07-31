@@ -19,22 +19,6 @@
             </div>
 
             <div class="card-body">
-                {{-- <div class="d-flex justify-content-between align-items-end gap-2 mb-3">
-                    <div class="d-flex gap-3">
-                        <div>
-                            <label class="form-label mb-1">Tanggal Awal</label>
-                            <input type="date" class="form-control rounded-0" wire:model="startDate">
-                        </div>
-                        <div>
-                            <label class="form-label mb-1">Tanggal Akhir</label>
-                            <input type="date" class="form-control rounded-0" wire:model="endDate">
-                        </div>
-                    </div>
-
-                    <div style="width: 300px;">
-                        <input type="text" class="form-control rounded-0" wire:model="searchSummary" placeholder="Search here...">
-                    </div>
-                </div> --}}
                 <table class="table table-bordered text-center align-middle">
                     <thead>
                         <tr>
@@ -66,14 +50,14 @@
                     </tbody>
                 </table>
                 <div class="mt-2">
-                    {{ $summary->links() }}
+                    {{ $summary->links('pagination::bootstrap-4') }}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<a href="{{ url()->previous() }}" class="back bg-sb-secondary text-light text-center w-auto">
+<a href="{{ url('/') }}" class="back bg-sb-secondary text-light text-center w-auto">
     <i class="fa-regular fa-reply"></i>
 </a>
 

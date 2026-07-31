@@ -164,7 +164,7 @@
                         </table>
                     </div>
                     <div class="mt-2">
-                        {{ $summary->links() }}
+                        {{ $summary->links('pagination::bootstrap-4') }}
                     </div>
                 </div>
             </div>
@@ -228,7 +228,7 @@
                         </table>
                     </div>
                     <div class="mt-2">
-                        {{ $summaryRework->links() }}
+                        {{ $summaryRework->links('pagination::bootstrap-4') }}
                     </div>
                 </div>
             </div>
@@ -237,7 +237,7 @@
 
 </div>
 
-<a href="{{ url()->previous() }}" class="back bg-sb-secondary text-light text-center w-auto">
+<a href="{{ url('/') }}" class="back bg-sb-secondary text-light text-center w-auto">
     <i class="fa-regular fa-reply"></i>
 </a>
 
