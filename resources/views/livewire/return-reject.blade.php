@@ -149,7 +149,7 @@
                         </table>
                     </div>
                     <div class="mt-2">
-                        {{ $summaryDefect->links('pagination::bootstrap-4') }}
+                        {{ $summaryDefect->links() }}
                     </div>
                 </div>
             </div>
@@ -210,7 +210,7 @@
                         </table>
                     </div>
                     <div class="mt-2">
-                        {{ $summaryReject->links('pagination::bootstrap-4') }}
+                        {{ $summaryReject->links() }}
                     </div>
                 </div>
             </div>

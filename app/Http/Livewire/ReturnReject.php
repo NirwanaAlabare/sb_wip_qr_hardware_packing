@@ -544,9 +544,9 @@ class ReturnReject extends Component
             ->whereDate('output_reject_packing_po_return.updated_at', $this->date)
             ->orderBy('output_reject_packing_po_return.id', 'DESC');
 
-        $summary = $query->paginate(10);
-        $summaryDefect = $queryDefect->paginate(10);
-        $summaryReject = $queryReject->paginate(10);
+        $summary = $query->paginate(10, ['*'], 'summaryPage');
+        $summaryDefect = $queryDefect->paginate(10, ['*'], 'defectPage');
+        $summaryReject = $queryReject->paginate(10, ['*'], 'rejectPage');
 
         return view('livewire.return-reject', [
             'summary' => $summary,

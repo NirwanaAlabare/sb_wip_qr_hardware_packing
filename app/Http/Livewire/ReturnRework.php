@@ -265,8 +265,8 @@ class ReturnRework extends Component
             ->whereDate('output_defect_packing_po_return.reworked_at', $this->date)
             ->orderBy('output_defect_packing_po_return.id', 'DESC');
 
-        $summary = $query->paginate(10);
-        $summaryRework = $queryRework->paginate(10);
+        $summary = $query->paginate(10, ['*'], 'summaryPage');
+        $summaryRework = $queryRework->paginate(10, ['*'], 'reworkPage');
 
         return view('livewire.return-rework', [
             'summary' => $summary,

@@ -2,25 +2,29 @@
 
 namespace App\Http\Livewire;
 
-use Livewire\Component;
-use Livewire\WithFileUploads;
-use Illuminate\Session\SessionManager;
-use Illuminate\Support\Facades\Auth;
+use App\Models\SignalBit\Defect as DefectModel;
+use App\Models\SignalBit\DefectArea;
+use App\Models\SignalBit\DefectType;
+use App\Models\SignalBit\EndlineOutput;
 use App\Models\SignalBit\MasterPlan;
 use App\Models\SignalBit\ProductType;
-use App\Models\SignalBit\DefectType;
-use App\Models\SignalBit\DefectArea;
-use App\Models\SignalBit\EndlineOutput;
-use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\Rework;
-use App\Models\SignalBit\Defect as DefectModel;
+use App\Models\SignalBit\Rft;
 use Carbon\Carbon;
 use DB;
+use Illuminate\Session\SessionManager;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class ReturnDefect extends Component
 {
     use WithFileUploads;
+    use WithPagination;
+
+    protected $paginationTheme = 'bootstrap'; 
 
     public $orderInfo;
     public $orderWsDetailSizes;
@@ -359,8 +363,8 @@ class ReturnDefect extends Component
             ->where('line_qc_finishing', auth()->user()->username)
             ->orderBy('output_defect_packing_po_return.id', 'DESC');
 
-        $summary = $query->paginate(10);
-        $summaryDefect = $queryDefect->paginate(10);
+        $summary = $query->paginate(10, ['*'], 'summaryPage');
+        $summaryDefect = $queryDefect->paginate(10, ['*'], 'defectPage');
 
         return view('livewire.return-defect', [
             'summary' => $summary,
