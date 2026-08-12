@@ -96,8 +96,8 @@ class Rft extends Component
             ->first();
 
         if ($secondaryOut) {
-            if ($secondaryOut->status !== 'rft') {
-                $this->addError('numberingInput', 'Kode QR sudah discan di Finishing Proses.');
+            if ($secondaryOut->status !== 'rft' && $secondaryOut->status !== 'rework') {
+                $this->addError('numberingInput', 'Kode QR discan di Finishing Proses sebagai '.$secondaryOut->status.'.');
                 return true;
             }
         } else {
