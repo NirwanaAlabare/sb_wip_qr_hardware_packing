@@ -27,6 +27,7 @@ class ProductionController extends Controller
                 master_plan.color as color,
                 so_det.size as size,
                 so.qty as qty_order,
+                master_plan.sewing_line,
                 CONCAT(masterproduct.product_group, ' - ', masterproduct.product_item) as product_type
             ")
             ->leftJoin('act_costing', 'act_costing.id', '=', 'master_plan.id_ws')
@@ -66,6 +67,10 @@ class ProductionController extends Controller
                 'act_costing.styleno',
                 'mastersupplier.supplier'
             )->get();
+
+        if ($orderInfo && $orderInfo->sewing_line != Auth::user()->username) {
+            return redirect()->back()->with('error', 'Tidak dapat mengakses master plan dari "'.$orderInfo->sewing_line.'"');
+        }
 
         return view('production-panel', ['orderInfo' => $orderInfo, 'orderWsDetails' => $orderWsDetails]);
     }

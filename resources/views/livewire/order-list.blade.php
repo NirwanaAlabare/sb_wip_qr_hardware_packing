@@ -1,4 +1,11 @@
 <div>
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>{{ session('error') }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="d-flex gap-1">
         <div class="input-group mb-3">
             <input type="hidden" wire:model='date'>
