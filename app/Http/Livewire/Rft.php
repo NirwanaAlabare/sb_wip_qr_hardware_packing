@@ -11,12 +11,15 @@ use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\EndlineOutput;
 use App\Models\Nds\Numbering;
 use App\Models\Nds\OutputPacking;
+use App\Traits\ChecksMasterPlanCancel;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use DB;
 
 class Rft extends Component
 {
+    use ChecksMasterPlanCancel;
+
     public $orderInfo;
     public $orderWsDetailSizes;
     public $sizeInput;
@@ -155,6 +158,10 @@ class Rft extends Component
 
         $numberingInput = $value;
 
+        if ($this->masterPlanCancelled()) {
+            return;
+        }
+
         if ($numberingInput) {
             // if (str_contains($numberingInput, 'WIP')) {
             //     $numberingData = DB::connection("mysql_nds")->table("stocker_numbering")->where("kode", $numberingInput)->first();
@@ -265,6 +272,10 @@ class Rft extends Component
     }
 
     public function submitRapidInput() {
+        if ($this->masterPlanCancelled()) {
+            return;
+        }
+
         ini_set('memory_limit', '2048M');
 
         $rapidRftFiltered = [];

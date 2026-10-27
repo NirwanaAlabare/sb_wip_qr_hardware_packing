@@ -12,12 +12,14 @@ use App\Models\SignalBit\MasterPlan;
 use App\Models\SignalBit\Rft;
 use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\Rework as ReworkModel;
+use App\Traits\ChecksMasterPlanCancel;
 use Carbon\Carbon;
 use DB;
 
 class Rework extends Component
 {
     use WithPagination;
+    use ChecksMasterPlanCancel;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -195,6 +197,10 @@ class Rework extends Component
     }
 
     public function submitAllRework() {
+        if ($this->masterPlanCancelled()) {
+            return;
+        }
+
         $availableRework = 0;
         $externalRework = 0;
 
@@ -295,6 +301,10 @@ class Rework extends Component
     }
 
     public function submitMassRework() {
+        if ($this->masterPlanCancelled()) {
+            return;
+        }
+
         $availableRework = 0;
         $externalRework = 0;
 
@@ -372,6 +382,10 @@ class Rework extends Component
     }
 
     public function submitRework($defectId) {
+        if ($this->masterPlanCancelled()) {
+            return;
+        }
+
         $thisDefectRework = DB::connection('mysql_sb')->table('output_reworks_packing')->where('defect_id', $defectId)->count();
 
         if ($thisDefectRework < 1) {
@@ -462,6 +476,10 @@ class Rework extends Component
         $this->emit('qrInputFocus', 'rework');
 
         $numberingInput = $value;
+
+        if ($this->masterPlanCancelled()) {
+            return;
+        }
 
         if ($numberingInput) {
             // if (str_contains($numberingInput, 'WIP')) {
@@ -603,6 +621,10 @@ class Rework extends Component
     }
 
     public function submitRapidInput() {
+        if ($this->masterPlanCancelled()) {
+            return;
+        }
+
         $defectIds = [];
         $rftData = [];
         $rftDataNds = [];
