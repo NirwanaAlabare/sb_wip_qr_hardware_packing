@@ -18,6 +18,12 @@
         </a href="{{ $this->baseUrl.'/production-panel/universal/' }}">
     </div>
 
+    <div class="loading-container-fullscreen" wire:loading wire:target="preSubmitFilter, clearFilter, filterLine, filterBuyer, filterWs, filterProductType, filterStyle">
+        <div class="loading-container">
+            <div class="loading"></div>
+        </div>
+    </div>
+
     <div class="loading-container-fullscreen hidden" id="loading-order-list">
         <div class="loading-container">
             <div class="loading"></div>
@@ -257,15 +263,7 @@
 
 @push('scripts')
     <script>
-        Livewire.emit("loadingStart");
-
         document.addEventListener("DOMContentLoaded", () => {
-            $("#loading-order-list").addClass("hidden");
-
-            $('#filter-button').on('click', function (e) {
-                Livewire.emit("loadingStart");
-            });
-
             // Line
             $('#line-select2').select2({
                 theme: "bootstrap-5",
@@ -275,8 +273,6 @@
             });
 
             $('#line-select2').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
                 var filterLine = $('#line-select2').select2("val");
                 @this.set('filterLine', filterLine);
             });
@@ -290,8 +286,6 @@
             });
 
             $('#buyer-select2').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
                 var filterBuyer = $('#buyer-select2').select2("val");
                 @this.set('filterBuyer', filterBuyer);
             });
@@ -305,8 +299,6 @@
             });
 
             $('#ws-select2').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
                 var filterWs = $('#ws-select2').select2("val");
                 @this.set('filterWs', filterWs);
             });
@@ -320,8 +312,6 @@
             });
 
             $('#product-type-select2').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
                 var filterProductType = $('#product-type-select2').select2("val");
                 @this.set('filterProductType', filterProductType);
             });
@@ -335,15 +325,11 @@
             });
 
             $('#style-select2').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
                 var filterStyle = $('#style-select2').select2("val");
                 @this.set('filterStyle', filterStyle);
             });
 
             Livewire.on('clearFilterInput', () => {
-                Livewire.emit("loadingStart");
-
                 $('#line-select2').val("").trigger('change');
                 $('#buyer-select2').val("").trigger('change');
                 $('#ws-select2').val("").trigger('change');
