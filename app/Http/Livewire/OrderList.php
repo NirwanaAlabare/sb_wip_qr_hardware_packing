@@ -118,7 +118,8 @@ class OrderList extends Component
                 act_costing.kpno as ws_number,
                 mastersupplier.supplier as buyer_name,
                 act_costing.styleno as style_name,
-                CONCAT(masterproduct.product_group, ' - ', masterproduct.product_item) as product_type
+                CONCAT(masterproduct.product_group, ' - ', masterproduct.product_item) as product_type,
+                GROUP_CONCAT(DISTINCT master_plan.color SEPARATOR ' | ') as colors
             ")
             ->leftJoin('act_costing', 'act_costing.id', '=', 'master_plan.id_ws')
             ->leftJoin('so', 'so.id_cost', '=', 'act_costing.id')
@@ -149,7 +150,8 @@ class OrderList extends Component
                 COALESCE(output.progress, 0) as progress,
                 COALESCE(output_endline.progress, 0) as target,
                 COALESCE(defects.total, 0) as total_defect,
-                CONCAT(masterproduct.product_group, ' - ', masterproduct.product_item) as product_type
+                CONCAT(masterproduct.product_group, ' - ', masterproduct.product_item) as product_type,
+                GROUP_CONCAT(DISTINCT master_plan.color SEPARATOR ' | ') as colors
             ")
             ->leftJoin('act_costing', 'act_costing.id', '=', 'master_plan.id_ws')
             ->leftJoin('so', 'so.id_cost', '=', 'act_costing.id')
@@ -282,7 +284,7 @@ class OrderList extends Component
             ->where('line_qc_finishing', auth()->user()->username)
             ->whereDate('output_defect_packing_po_return.reworked_at', $this->date)
             ->count('output_defect_packing_po_return.id');
-            
+
         $this->return_reject = DB::table('output_reject_packing_po_return')
             ->leftJoin('output_rfts_packing_po_return', 'output_rfts_packing_po_return.id', '=', 'output_reject_packing_po_return.output_rfts_packing_po_return_id')
             ->where('line_qc_finishing', auth()->user()->username)
