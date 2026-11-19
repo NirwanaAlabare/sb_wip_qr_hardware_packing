@@ -9,8 +9,8 @@
     <div class="d-flex gap-1">
         <div class="input-group mb-3">
             <input type="hidden" wire:model='date'>
-            <input type="text" class="form-control" wire:model='search' placeholder="Search Order...">
-            <button class="btn btn-sb-secondary" type="button" id="button-search-order"><i class="fa-regular fa-magnifying-glass"></i></button>
+            <input type="text" class="form-control" wire:model.lazy='search' placeholder="Search Order...">
+            <button class="btn btn-sb-secondary" type="button" id="button-search-order" wire:click='$refresh'><i class="fa-regular fa-magnifying-glass"></i></button>
         </div>
         <button class="btn btn-sb-secondary-outline mb-3 d-none" type="button" wire:click="preSubmitFilter" id="filter-button"><i class="fa-regular fa-filter"></i></button>
         <a href="{{ $this->baseUrl.'/production-panel/universal/' }}" class="btn btn-sb-secondary mb-3 d-none">
@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <div class="w-100" wire:loading wire:target='search, date, filterLine, filterBuyer, filterWs, filterProductType, filterStyle'>
+    <div class="w-100" wire:loading wire:target='$refresh, search, date, filterLine, filterBuyer, filterWs, filterProductType, filterStyle'>
         <div class="loading-container">
             <div class="loading"></div>
         </div>
@@ -39,7 +39,7 @@
         </p>
     </div>
 
-    <div class="order-list row row-gap-3 mb-3 h-100" wire:loading.remove wire:target='search, date'>
+    <div class="order-list row row-gap-3 mb-3 h-100" wire:loading.remove wire:target='$refresh, search, date'>
         <div class="col-12">
             <div class="card">
                 <div class="card-body text-center fw-bold fs-5">

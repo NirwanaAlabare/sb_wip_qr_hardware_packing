@@ -129,7 +129,7 @@ class OrderList extends Component
             ->leftJoin('masterproduct', 'masterproduct.id', '=', 'act_costing.id_product')
             ->where('so_det.cancel', 'N')
             ->where('master_plan.cancel', 'N')
-            ->whereRaw('master_plan.tgl_plan = "'.$this->date.'" '.$additionalQuery)
+            ->whereRaw('(master_plan.tgl_plan = "'.$this->date.'" '.$additionalQuery.')')
             ->orderBy('master_plan.tgl_plan', 'desc')
             ->orderBy('master_plan.sewing_line', 'asc')
             ->orderBy('mastersupplier.supplier', 'asc')
@@ -228,9 +228,11 @@ class OrderList extends Component
             ->where('so_det.cancel', 'N')
             ->where('master_plan.cancel', 'N')
             ->whereRaw("
-                (master_plan.sewing_line = '".strtoupper(Auth::user()->username)."' OR master_plan.sewing_line = '".str_replace(" ", "_", strtoupper($this->filterLine))."') AND
-                master_plan.tgl_plan = '".$this->date."'
-                ".$additionalQuery."
+                (
+                    (master_plan.sewing_line = '".strtoupper(Auth::user()->username)."' OR master_plan.sewing_line = '".str_replace(" ", "_", strtoupper($this->filterLine))."') AND
+                    master_plan.tgl_plan = '".$this->date."'
+                    ".$additionalQuery."
+                )
             ")
             ->whereRaw("
                 (
