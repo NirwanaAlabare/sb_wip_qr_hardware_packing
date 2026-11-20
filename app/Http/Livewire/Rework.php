@@ -112,10 +112,13 @@ class Rework extends Component
         return false;
     }
 
-    public function updateWsDetailSizes($panel)
+    public function updateWsDetailSizes($panel, $orderInfoId = null, $orderWsDetailSizes = null)
     {
-        $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
-        $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+        // Ganti order hanya kalau dikirim dari panel di tab ini (ganti color)
+        if ($orderInfoId) {
+            $this->orderInfo = MasterPlan::find($orderInfoId);
+            $this->orderWsDetailSizes = collect($orderWsDetailSizes);
+        }
         $this->selectedColor = $this->orderInfo->id;
         $this->selectedColorName = $this->orderInfo->color;
 
@@ -141,10 +144,10 @@ class Rework extends Component
         $this->emit('loadReworkPageJs');
     }
 
-    public function mount(SessionManager $session, $orderWsDetailSizes)
+    public function mount($orderInfo, $orderWsDetailSizes)
     {
+        $this->orderInfo = $orderInfo;
         $this->orderWsDetailSizes = $orderWsDetailSizes;
-        $session->put('orderWsDetailSizes', $orderWsDetailSizes);
 
         $this->massSize = '';
 
@@ -498,16 +501,15 @@ class Rework extends Component
             // One Straight Format
                 $numberingData = DB::connection("mysql_nds")->table("year_sequence")->selectRaw("year_sequence.*, year_sequence.id_year_sequence no_cut_size")->where("id_year_sequence", $numberingInput)->first();
 
-            if ($numberingData) {
-                $this->sizeInput = $numberingData->so_det_id;
-                $this->sizeInputText = $numberingData->size;
-                $this->noCutInput = $numberingData->no_cut_size;
-                $this->numberingInput = $numberingInput;
-
-                if (!$this->sizeInput) {
-                    return $this->emit('alert', 'error', "QR belum terdaftar.");
-                }
+            // QR harus terdaftar (jangan pakai sisa data scan sebelumnya)
+            if (!$numberingData || empty($numberingData->so_det_id)) {
+                return $this->emit('alert', 'error', "QR belum terdaftar.");
             }
+
+            $this->sizeInput = $numberingData->so_det_id;
+            $this->sizeInputText = $numberingData->size;
+            $this->noCutInput = $numberingData->no_cut_size;
+            $this->numberingInput = $numberingInput;
         }
 
         $validatedData = $this->validate();
@@ -703,9 +705,6 @@ class Rework extends Component
         }
 
         $this->emit('loadReworkPageJs');
-
-        $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
-        $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
 
         $this->selectedColor = $this->orderInfo->id;
         $this->selectedColorName = $this->orderInfo->color;

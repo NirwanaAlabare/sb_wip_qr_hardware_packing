@@ -165,33 +165,33 @@
         {{-- Rft --}}
         {{-- @if ($rft) --}}
         <div class="{{ $rft ? '' : 'd-none' }}">
-            @livewire('rft', ["orderWsDetailSizes" => $orderWsDetailSizes])
+            @livewire('rft', ["orderInfo" => $orderInfo, "orderWsDetailSizes" => $orderWsDetailSizes])
         </div>
         {{-- @endif --}}
 
         {{-- Defect --}}
         {{-- @if ($defect) --}}
         <div class="{{ $defect ? '' : 'd-none' }}">
-            @livewire('defect', ["orderWsDetailSizes" => $orderWsDetailSizes])
+            @livewire('defect', ["orderInfo" => $orderInfo, "orderWsDetailSizes" => $orderWsDetailSizes])
         </div>
         {{-- @endif --}}
 
         {{-- Defect History --}}
         @if ($defectHistory)
-            @livewire('defect-history', ["orderWsDetailSizes" => $orderWsDetailSizes])
+            @livewire('defect-history', ["orderInfo" => $orderInfo, "orderWsDetailSizes" => $orderWsDetailSizes])
         @endif
 
         {{-- Reject --}}
         {{-- @if ($reject) --}}
         <div class="{{ $reject ? '' : 'd-none' }}">
-            @livewire('reject', ["orderWsDetailSizes" => $orderWsDetailSizes])
+            @livewire('reject', ["orderInfo" => $orderInfo, "orderWsDetailSizes" => $orderWsDetailSizes])
         </div>
         {{-- @endif --}}
 
         {{-- Rework --}}
         {{-- @if ($rework) --}}
         <div class="{{ $rework ? '' : 'd-none' }}">
-            @livewire('rework', ["orderWsDetailSizes" => $orderWsDetailSizes])
+            @livewire('rework', ["orderInfo" => $orderInfo, "orderWsDetailSizes" => $orderWsDetailSizes])
         </div>
         {{-- @endif --}}
 

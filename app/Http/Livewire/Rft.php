@@ -9,6 +9,7 @@ use App\Models\SignalBit\Rework;
 use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\EndlineOutput;
+use App\Models\SignalBit\MasterPlan;
 use App\Models\Nds\Numbering;
 use App\Models\Nds\OutputPacking;
 use App\Traits\ChecksMasterPlanCancel;
@@ -48,10 +49,10 @@ class Rft extends Component
         'toInputPanel' => 'resetError'
     ];
 
-    public function mount(SessionManager $session, $orderWsDetailSizes)
+    public function mount($orderInfo, $orderWsDetailSizes)
     {
+        $this->orderInfo = $orderInfo;
         $this->orderWsDetailSizes = $orderWsDetailSizes;
-        $session->put('orderWsDetailSizes', $orderWsDetailSizes);
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->noCutInput = null;
@@ -117,15 +118,18 @@ class Rft extends Component
         return false;
     }
 
-    public function updateWsDetailSizes($panel)
+    public function updateWsDetailSizes($panel, $orderInfoId = null, $orderWsDetailSizes = null)
     {
         $this->sizeInput = null;
         $this->sizeInputText = null;
         $this->noCutInput = null;
         $this->numberingInput = null;
 
-        $this->orderInfo = session()->get('orderInfo', $this->orderInfo);
-        $this->orderWsDetailSizes = session()->get('orderWsDetailSizes', $this->orderWsDetailSizes);
+        // Ganti order hanya kalau dikirim dari panel di tab ini (ganti color)
+        if ($orderInfoId) {
+            $this->orderInfo = MasterPlan::find($orderInfoId);
+            $this->orderWsDetailSizes = collect($orderWsDetailSizes);
+        }
         $this->selectedColor = $this->orderInfo->id;
         $this->selectedColorName = $this->orderInfo->color;
 
@@ -304,7 +308,7 @@ class Rft extends Component
 
                 $endlineOutputCount = DB::connection('mysql_sb')->table('output_rfts')->where("kode_numbering", $this->rapidRft[$i]['numberingInput'])->count();
 
-                if (($endlineOutputCount > 0) && ((DB::connection('mysql_sb')->table('output_rfts_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_defects_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rejects_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count()) < 1) && ($this->orderWsDetailSizes->where('so_det_id', $numberingData->so_det_id)->count() > 0)) {
+                if ($numberingData && ($endlineOutputCount > 0) && ((DB::connection('mysql_sb')->table('output_rfts_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_defects_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count() + DB::connection('mysql_sb')->table('output_rejects_packing')->where('kode_numbering', $this->rapidRft[$i]['numberingInput'])->count()) < 1) && ($this->orderWsDetailSizes->where('so_det_id', $numberingData->so_det_id)->count() > 0)) {
                     array_push($rapidRftFiltered, [
                         'master_plan_id' => $this->orderInfo->id,
                         'so_det_id' => $numberingData->so_det_id,
@@ -369,9 +373,6 @@ class Rft extends Component
                 $this->emit('alert', 'error', $message);
             }
         }
-
-        $this->orderInfo = $session->get('orderInfo', $this->orderInfo);
-        $this->orderWsDetailSizes = $session->get('orderWsDetailSizes', $this->orderWsDetailSizes);
 
         $this->selectedColor = $this->orderInfo->id;
         $this->selectedColorName = $this->orderInfo->color;
